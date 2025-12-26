@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeDLM: Reconciling Diffusion Language Models with Standard Causal Attention for Fast Inference</title>
+    <meta name="description" content="Project landing page for WeDLM">
+    
+    <!-- 1. 预连接关键域名 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- 2. 字体异步加载，减少字重 -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&family=Noto+Sans:wght@400;600&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet"></noscript>
+    
+    <!-- 3. 关键 CSS 内联 -->
+    <style>
+        /* Reset & Base */
+        *,*::before,*::after{box-sizing:border-box}
+        body{margin:0;font-family:'Noto Sans',system-ui,-apple-system,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+        img,svg{display:block;max-width:100%}
+        a{text-decoration:none;color:inherit}
+        button{cursor:pointer;border:none;background:none;font:inherit}
+        pre{margin:0}
+        table{border-collapse:separate;border-spacing:0}
+        
+        /* Typography */
+        .font-display{font-family:'Google Sans',system-ui,sans-serif}
+        .font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+        .font-serif{font-family:ui-serif,Georgia,serif}
+        .font-italic{font-style:italic}
+
+        /* Layout */
+        .max-w-4xl{max-width:56rem}.max-w-5xl{max-width:64rem}.max-w-6xl{max-width:72rem}.max-w-7xl{max-width:80rem}
+        .mx-auto{margin-left:auto;margin-right:auto}
+        .px-2{padding-left:.5rem;padding-right:.5rem}.px-2\.5{padding-left:.625rem;padding-right:.625rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}
+        .py-0\.5{padding-top:.125rem;padding-bottom:.125rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}
+        .py-3{padding-top:.75rem;padding-bottom:.75rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.py-12{padding-top:3rem;padding-bottom:3rem}
+        .py-20{padding-top:5rem;padding-bottom:5rem}.py-24{padding-top:6rem;padding-bottom:6rem}
+        .pt-3{padding-top:.75rem}.pt-4{padding-top:1rem}.pt-16{padding-top:4rem}
+        .pb-2{padding-bottom:.5rem}.pb-4{padding-bottom:1rem}.pb-12{padding-bottom:3rem}
+        .pl-3{padding-left:.75rem}.pl-4{padding-left:1rem}.pl-6{padding-left:1.5rem}
+        .pr-4{padding-right:1rem}.pr-6{padding-right:1.5rem}
+        .p-1{padding:.25rem}.p-2{padding:.5rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-8{padding:2rem}
+        .mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-4{margin-bottom:1rem}
+        .mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mb-10{margin-bottom:2.5rem}.mb-12{margin-bottom:3rem}
+        .mb-16{margin-bottom:4rem}.mb-20{margin-bottom:5rem}.mb-32{margin-bottom:8rem}
+        .mt-1{margin-top:.25rem}.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}
+        .mt-6{margin-top:1.5rem}.mt-10{margin-top:2.5rem}.mt-12{margin-top:3rem}.mt-16{margin-top:4rem}
+        .mt-auto{margin-top:auto}
+        .mr-1{margin-right:.25rem}.mr-4{margin-right:1rem}
+        .ml-1{margin-left:.25rem}.ml-2{margin-left:.5rem}
+        .mx-0\.5{margin-left:.125rem;margin-right:.125rem}.mx-1{margin-left:.25rem;margin-right:.25rem}
+        .-mt-10{margin-top:-2.5rem}.-mr-10{margin-right:-2.5rem}
+        .-inset-4{inset:-1rem}.-top-2{top:-.5rem}.-top-3{top:-.75rem}.-bottom-2{bottom:-.5rem}
+        .gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-8{gap:2rem}.gap-10{gap:2.5rem}.gap-12{gap:3rem}
+        .gap-x-2{column-gap:.5rem}.gap-x-6{column-gap:1.5rem}.gap-y-2{row-gap:.5rem}.gap-y-3{row-gap:.75rem}
+        .space-x-8>*+*{margin-left:2rem}.space-y-1>*+*{margin-top:.25rem}.space-y-4>*+*{margin-top:1rem}.space-y-6>*+*{margin-top:1.5rem}
+
+        /* Flexbox & Grid */
+        .flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.inline-block{display:inline-block}
+        .flex-col{flex-direction:column}.flex-row{flex-direction:row}
+        .flex-wrap{flex-wrap:wrap}.flex-shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.flex-1{flex:1 1 0%}
+        .items-center{align-items:center}.items-start{align-items:flex-start}.items-end{align-items:flex-end}
+        .justify-center{justify-content:center}.justify-between{justify-content:space-between}
+        .text-center{text-align:center}.text-left{text-align:left}.text-right{text-align:right}.text-justify{text-align:justify}
+        .order-1{order:1}.order-2{order:2}
+        
+        /* Sizing */
+        .w-full{width:100%}.w-2{width:.5rem}.w-2\.5{width:.625rem}.w-3{width:.75rem}.w-3\.5{width:.875rem}
+        .w-5{width:1.25rem}.w-6{width:1.5rem}.w-8{width:2rem}.w-12{width:3rem}.w-14{width:3.5rem}.w-16{width:4rem}.w-20{width:5rem}.w-40{width:10rem}
+        .h-full{height:100%}.h-px{height:1px}.h-1{height:.25rem}.h-2{height:.5rem}.h-2\.5{height:.625rem}.h-3{height:.75rem}.h-3\.5{height:.875rem}
+        .h-4{height:1rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-16{height:4rem}.h-20{height:5rem}.h-24{height:6rem}.h-28{height:7rem}
+        
+        /* Colors - Background */
+        .bg-white{background-color:#fff}.bg-gray-50{background-color:#f9fafb}.bg-gray-100{background-color:#f3f4f6}
+        .bg-gray-200{background-color:#e5e7eb}.bg-gray-300{background-color:#d1d5db}.bg-gray-500{background-color:#6b7280}
+        .bg-gray-800{background-color:#1f2937}.bg-gray-900{background-color:#111827}
+        .bg-green-50{background-color:#f0fdf4}.bg-green-100{background-color:#dcfce7}.bg-green-200{background-color:#bbf7d0}
+        .bg-green-500{background-color:#22c55e}.bg-green-600{background-color:#16a34a}
+        .bg-blue-50{background-color:#eff6ff}.bg-blue-100{background-color:#dbeafe}.bg-blue-600{background-color:#2563eb}
+        .bg-yellow-50{background-color:#fefce8}.bg-yellow-100{background-color:#fef9c3}.bg-yellow-500{background-color:#eab308}
+        .bg-yellow-900{background-color:#713f12}
+        .bg-red-500{background-color:#ef4444}
+        .bg-white-90{background-color:rgba(255,255,255,.9)}
+        .bg-green-50-20{background-color:rgba(240,253,244,.2)}
+        .bg-green-900-20{background-color:rgba(20,83,45,.2)}
+        .bg-opacity-10{--tw-bg-opacity:.1}.bg-opacity-20{--tw-bg-opacity:.2}.bg-opacity-30{--tw-bg-opacity:.3}.bg-opacity-50{--tw-bg-opacity:.5}
+
+        /* Colors - Text */
+        .text-white{color:#fff}.text-gray-100{color:#f3f4f6}.text-gray-300{color:#d1d5db}.text-gray-400{color:#9ca3af}
+        .text-gray-500{color:#6b7280}.text-gray-600{color:#4b5563}.text-gray-700{color:#374151}.text-gray-800{color:#1f2937}.text-gray-900{color:#111827}
+        .text-green-400{color:#4ade80}.text-green-500{color:#22c55e}.text-green-600{color:#16a34a}.text-green-700{color:#15803d}.text-green-800{color:#166534}
+        .text-blue-400{color:#60a5fa}.text-blue-500{color:#3b82f6}.text-blue-600{color:#2563eb}.text-blue-800{color:#1e40af}
+        .text-yellow-200{color:#fef08a}.text-yellow-700{color:#a16207}.text-yellow-800{color:#854d0e}
+        .text-purple-600{color:#9333ea}
+        .text-transparent{color:transparent}
+        .text-opacity-80{--tw-text-opacity:.8}
+        
+        /* Borders */
+        .border{border-width:1px;border-style:solid}.border-2{border-width:2px;border-style:solid}.border-4{border-width:4px;border-style:solid}
+        .border-t{border-top-width:1px;border-top-style:solid}.border-b{border-bottom-width:1px;border-bottom-style:solid}.border-l{border-left-width:1px;border-left-style:solid}
+        .border-l-2{border-left-width:2px;border-left-style:solid}.border-l-4{border-left-width:4px;border-left-style:solid}.border-r{border-right-width:1px;border-right-style:solid}.border-x{border-left-width:1px;border-right-width:1px;border-left-style:solid;border-right-style:solid}
+        .border-gray-100{border-color:#f3f4f6}.border-gray-200{border-color:#e5e7eb}.border-gray-300{border-color:#d1d5db}
+        .border-gray-400{border-color:#9ca3af}.border-gray-700{border-color:#374151}.border-gray-800{border-color:#1f2937}.border-black{border-color:#000}
+        .border-green-100{border-color:#dcfce7}.border-green-200{border-color:#bbf7d0}.border-green-500{border-color:#22c55e}.border-green-600{border-color:#16a34a}.border-green-900{border-color:#14532d}
+        .border-blue-200{border-color:#bfdbfe}.border-blue-400{border-color:#60a5fa}
+        .border-yellow-200{border-color:#fef08a}
+        .border-current{border-color:currentColor}
+        .border-dashed{border-style:dashed}
+        .border-white{border-color:#fff}
+        .border-opacity-10{--tw-border-opacity:.1}
+        .border-green-900-50{border-color:rgba(20,83,45,.5)}
+        .rounded{border-radius:.25rem}.rounded-md{border-radius:.375rem}.rounded-lg{border-radius:.5rem}
+        .rounded-xl{border-radius:.75rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}
+        .rounded-t-xl{border-top-left-radius:.75rem;border-top-right-radius:.75rem}
+        .rounded-b-lg{border-bottom-left-radius:.5rem;border-bottom-right-radius:.5rem}
+        .rounded-r-full{border-top-right-radius:9999px;border-bottom-right-radius:9999px}
+
+        /* Typography */
+        .text-xs{font-size:.75rem;line-height:1rem}.text-sm{font-size:.875rem;line-height:1.25rem}
+        .text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}
+        .text-xl{font-size:1.25rem;line-height:1.75rem}.text-2xl{font-size:1.5rem;line-height:2rem}
+        .text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-5xl{font-size:3rem;line-height:1}
+        .font-normal{font-weight:400}.font-medium{font-weight:500}.font-semibold{font-weight:600}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-black{font-weight:900}
+        .leading-none{line-height:1}.leading-tight{line-height:1.25}.leading-relaxed{line-height:1.625}
+        .tracking-tight{letter-spacing:-.025em}.tracking-wide{letter-spacing:.025em}.tracking-wider{letter-spacing:.05em}.tracking-widest{letter-spacing:.1em}
+        .uppercase{text-transform:uppercase}.whitespace-nowrap{white-space:nowrap}.whitespace-pre{white-space:pre}.whitespace-pre-wrap{white-space:pre-wrap}
+        .align-middle{vertical-align:middle}.align-bottom{vertical-align:bottom}
+        .hyphens-auto{hyphens:auto;-webkit-hyphens:auto}
+        
+        /* Effects */
+        .shadow-sm{box-shadow:0 1px 2px 0 rgb(0 0 0/.05)}.shadow{box-shadow:0 1px 3px 0 rgb(0 0 0/.1),0 1px 2px -1px rgb(0 0 0/.1)}
+        .shadow-md{box-shadow:0 4px 6px -1px rgb(0 0 0/.1),0 2px 4px -2px rgb(0 0 0/.1)}
+        .shadow-lg{box-shadow:0 10px 15px -3px rgb(0 0 0/.1),0 4px 6px -4px rgb(0 0 0/.1)}
+        .shadow-xl{box-shadow:0 20px 25px -5px rgb(0 0 0/.1),0 8px 10px -6px rgb(0 0 0/.1)}
+        .shadow-2xl{box-shadow:0 25px 50px -12px rgb(0 0 0/.25)}
+        .shadow-inner{box-shadow:inset 0 2px 4px 0 rgb(0 0 0/.05)}
+        .shadow-our-col{box-shadow:inset 0 4px 6px -4px rgba(0,0,0,.02),-1px 0 0 0 rgba(34,197,94,.1),1px 0 0 0 rgba(34,197,94,.1)}
+        .shadow-our-cell{box-shadow:-1px 0 0 0 rgba(34,197,94,.1),1px 0 0 0 rgba(34,197,94,.1)}
+        .shadow-our-cell-bottom{box-shadow:0 4px 6px -2px rgba(34,197,94,.05)}
+        .opacity-0{opacity:0}.opacity-50{opacity:.5}.opacity-70{opacity:.7}.opacity-80{opacity:.8}.opacity-90{opacity:.9}
+        .overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}
+        .object-contain{object-fit:contain}
+        .backdrop-blur{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+        .filter{filter:var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,) var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,) var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,)}
+        .blur-3xl{--tw-blur:blur(64px);filter:blur(64px)}
+
+        /* Positioning */
+        .relative{position:relative}.absolute{position:absolute}.sticky{position:sticky}.fixed{position:fixed}
+        .inset-0{inset:0}.top-0{top:0}.right-0{right:0}.bottom-0{bottom:0}.left-0{left:0}
+        .top-4{top:1rem}.top-6{top:1.5rem}.right-4{right:1rem}.left-1\/2{left:50%}
+        .z-0{z-index:0}.z-10{z-index:10}.z-20{z-index:20}.z-50{z-index:50}
+        .transform{transform:translateX(var(--tw-translate-x,0)) translateY(var(--tw-translate-y,0)) rotate(var(--tw-rotate,0)) scale(var(--tw-scale-x,1),var(--tw-scale-y,1))}
+        .-translate-x-1\/2{--tw-translate-x:-50%;transform:translateX(-50%)}
+        .-translate-y-1\/2{--tw-translate-y:-50%;transform:translateY(-50%)}
+        .translate-x-1\/3{--tw-translate-x:33.333%;transform:translateX(33.333%)}
+        .translate-y-1\/3{--tw-translate-y:33.333%;transform:translateY(33.333%)}
+        .translate-y-px{--tw-translate-y:1px;transform:translateY(1px)}
+        .scale-125{transform:scale(1.25)}.scale-y-105{transform:scaleY(1.05)}
+        .origin-bottom{transform-origin:bottom}
+        .rotate-2{transform:rotate(2deg)}.-rotate-2{transform:rotate(-2deg)}
+        .pointer-events-none{pointer-events:none}
+        .-z-10{z-index:-10}
+        
+        /* Transitions & Animations */
+        .transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:150ms}
+        .transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:150ms}
+        .transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:150ms}
+        .transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:150ms}
+        .transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:150ms}
+        .duration-200{transition-duration:200ms}.duration-300{transition-duration:300ms}.duration-500{transition-duration:500ms}.duration-700{transition-duration:700ms}
+        .ease-out{transition-timing-function:cubic-bezier(0,0,.2,1)}.ease-in-out{transition-timing-function:cubic-bezier(.4,0,.2,1)}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes pulse{50%{opacity:.5}}
+        @keyframes ping{75%,100%{transform:scale(2);opacity:0}}
+        @keyframes fade-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+        .animate-spin{animation:spin 1s linear infinite}
+        .animate-pulse{animation:pulse 2s cubic-bezier(.4,0,.6,1) infinite}
+        .animate-ping{animation:ping 1s cubic-bezier(0,0,.2,1) infinite}
+        .animate-fade-in{animation:fade-in .5s ease-out forwards}
+
+        /* Gradients */
+        .bg-clip-text{-webkit-background-clip:text;background-clip:text}
+        .bg-gradient-to-r{background-image:linear-gradient(to right,var(--tw-gradient-stops))}
+        .bg-gradient-to-br{background-image:linear-gradient(to bottom right,var(--tw-gradient-stops))}
+        .bg-gradient-to-tr{background-image:linear-gradient(to top right,var(--tw-gradient-stops))}
+        .bg-gradient-to-bl{background-image:linear-gradient(to bottom left,var(--tw-gradient-stops))}
+        .from-green-600{--tw-gradient-from:#16a34a;--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to,rgb(22 163 74/0))}
+        .to-blue-600{--tw-gradient-to:#2563eb}
+        .from-gray-900{--tw-gradient-from:#111827;--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to,rgb(17 24 39/0))}
+        .to-gray-800{--tw-gradient-to:#1f2937}
+        .from-blue-50{--tw-gradient-from:#eff6ff;--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to,rgb(239 246 255/0))}
+        .to-gray-50{--tw-gradient-to:#f9fafb}
+        .from-green-50{--tw-gradient-from:#f0fdf4;--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to,rgb(240 253 244/0))}
+        
+        /* Ring */
+        .ring-2{box-shadow:0 0 0 2px var(--tw-ring-color)}.ring-4{box-shadow:0 0 0 4px var(--tw-ring-color)}
+        .ring-blue-200{--tw-ring-color:#bfdbfe}.ring-green-100{--tw-ring-color:#dcfce7}.ring-green-200{--tw-ring-color:#bbf7d0}
+        
+        /* Misc */
+        .fill-current{fill:currentColor}
+        .divide-y>*+*{border-top-width:1px}.divide-x>*+*{border-left-width:1px}.divide-gray-700>*+*{border-color:#374151}
+        .selection-green::selection{background-color:#dcfce7;color:#14532d}
+        .scroll-smooth{scroll-behavior:smooth}
+        .antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+        .no-underline{text-decoration:none}
+        .cursor-not-allowed{cursor:not-allowed}
+
+        /* Hover States */
+        .hover\:text-green-600:hover{color:#16a34a}
+        .hover\:text-green-700:hover{color:#15803d}
+        .hover\:text-blue-500:hover{color:#3b82f6}
+        .hover\:text-blue-600:hover{color:#2563eb}
+        .hover\:text-blue-800:hover{color:#1e40af}
+        .hover\:text-gray-600:hover{color:#4b5563}
+        .hover\:text-white:hover{color:#fff}
+        .hover\:bg-gray-50:hover{background-color:#f9fafb}
+        .hover\:bg-gray-700:hover{background-color:#374151}
+        .hover\:bg-blue-500:hover{background-color:#3b82f6}
+        .hover\:bg-yellow-600:hover{background-color:#ca8a04}
+        .hover\:bg-green-600:hover{background-color:#16a34a}
+        .hover\:bg-opacity-20:hover{--tw-bg-opacity:.2}
+        .hover\:border-green-100:hover{border-color:#dcfce7}
+        .hover\:border-green-300:hover{border-color:#86efac}
+        .hover\:border-blue-300:hover{border-color:#93c5fd}
+        .hover\:shadow-md:hover{box-shadow:0 4px 6px -1px rgb(0 0 0/.1),0 2px 4px -2px rgb(0 0 0/.1)}
+        .hover\:shadow-lg:hover{box-shadow:0 10px 15px -3px rgb(0 0 0/.1),0 4px 6px -4px rgb(0 0 0/.1)}
+        .hover\:shadow-xl:hover{box-shadow:0 20px 25px -5px rgb(0 0 0/.1),0 8px 10px -6px rgb(0 0 0/.1)}
+        .hover\:underline:hover{text-decoration-line:underline}
+        .hover\:-translate-y-0\.5:hover{transform:translateY(-.125rem)}
+        .hover\:rotate-1:hover{transform:rotate(1deg)}
+        .hover\:-rotate-1:hover{transform:rotate(-1deg)}
+        .group:hover .group-hover\:text-green-700{color:#15803d}
+        .group:hover .group-hover\:text-white{color:#fff}
+        .group:hover .group-hover\:bg-green-600{background-color:#16a34a}
+        .group:hover .group-hover\:translate-x-1{transform:translateX(.25rem)}
+        .group:hover .group-hover\:rotate-180{transform:rotate(180deg)}
+        .group:hover .group-hover\:scale-110{transform:scale(1.1)}
+
+        /* Responsive - SM (640px) */
+        @media(min-width:640px){
+            .sm\:gap-3{gap:.75rem}.sm\:p-4{padding:1rem}
+            .sm\:w-20{width:5rem}.sm\:h-24{height:6rem}.sm\:w-24{width:6rem}.sm\:h-28{height:7rem}
+            .sm\:text-base{font-size:1rem;line-height:1.5rem}
+        }
+        /* Responsive - MD (768px) */
+        @media(min-width:768px){
+            .md\:flex{display:flex}
+            .md\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+            .md\:divide-y-0>*+*{border-top-width:0}
+            .md\:divide-x>*+*{border-left-width:1px}
+            .md\:p-8{padding:2rem}
+            .md\:text-xl{font-size:1.25rem;line-height:1.75rem}
+            .md\:text-2xl{font-size:1.5rem;line-height:2rem}
+            .md\:text-4xl{font-size:2.25rem;line-height:2.5rem}
+            .md\:text-5xl{font-size:3rem;line-height:1}
+            .md\:text-lg{font-size:1.125rem;line-height:1.75rem}
+        }
+        /* Responsive - LG (1024px) */
+        @media(min-width:1024px){
+            .lg\:flex-row{flex-direction:row}
+            .lg\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+            .lg\:gap-10{gap:2.5rem}.lg\:gap-16{gap:4rem}.lg\:gap-20{gap:5rem}
+            .lg\:order-1{order:1}.lg\:order-2{order:2}
+            .lg\:w-1\/3{width:33.333%}
+            .lg\:text-5xl{font-size:3rem;line-height:1}
+        }
+    </style>
+</head>
+<body class="antialiased bg-white text-gray-900 selection-green">
+
+    <!-- Navbar -->
+    <nav class="border-b border-gray-200 bg-white-90 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="#" class="text-2xl font-bold font-display flex items-center gap-2 text-gray-900 no-underline">
+                <span class="bg-green-600 text-white px-2.5 py-1 rounded text-sm">WeChat AI</span> WeDLM
+            </a>
+            <div class="hidden md:flex space-x-8 text-lg font-medium text-gray-600">
+                <a href="#demo" class="hover:text-green-600 transition-colors">Demo</a>
+                <a href="#abstract" class="hover:text-green-600 transition-colors">Abstract</a>
+                <a href="#performance" class="hover:text-green-600 transition-colors">Performance</a>
+                <a href="#method" class="hover:text-green-600 transition-colors">Method</a>
+                <a href="#results" class="hover:text-green-600 transition-colors">Results</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="pt-16 pb-12 text-center px-4">
+        <div class="max-w-6xl mx-auto">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-8 font-display">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-blue-600">WeDLM</span>
+                <span class="text-gray-900">: Reconciling Diffusion Language Models with Standard Causal Attention for Fast Inference</span>
+            </h1>
+            
+            <div class="text-xl md:text-2xl text-blue-600 mb-8 flex flex-wrap justify-center gap-y-3 leading-relaxed">
+                <span class="mr-4 whitespace-nowrap">Aiwei Liu<sup class="ml-1 text-gray-500 text-sm">1,*,†</sup></span>
+                <span class="mr-4 whitespace-nowrap">Minghua He<sup class="ml-1 text-gray-500 text-sm">1,2,*</sup></span>
+                <span class="mr-4 whitespace-nowrap">Shaoxun Zeng<sup class="ml-1 text-gray-500 text-sm">3</sup></span>
+                <span class="mr-4 whitespace-nowrap">Sijun Zhang<sup class="ml-1 text-gray-500 text-sm">1</sup></span>
+                <span class="mr-4 whitespace-nowrap">Linhao Zhang<sup class="ml-1 text-gray-500 text-sm">1</sup></span>
+                <span class="mr-4 whitespace-nowrap">Chuhan Wu<sup class="ml-1 text-gray-500 text-sm">1</sup></span>
+                <span class="mr-4 whitespace-nowrap">Wei Jia<sup class="ml-1 text-gray-500 text-sm">1</sup></span>
+                <span class="mr-4 whitespace-nowrap">Yuan Liu<sup class="ml-1 text-gray-500 text-sm">1</sup></span>
+                <span class="mr-4 whitespace-nowrap">Xiao Zhou<sup class="ml-1 text-gray-500 text-sm">1</sup></span>
+                <span class="mr-4 whitespace-nowrap">Jie Zhou<sup class="ml-1 text-gray-500 text-sm">1</sup></span>
+            </div>
+            
+            <div class="text-lg md:text-xl text-gray-500 mb-10 space-y-1">
+                <div class="flex flex-wrap justify-center gap-x-6 gap-y-2">
+                    <span><sup>1</sup> WeChat AI, Tencent</span>
+                    <span><sup>2</sup> Peking University</span>
+                    <span><sup>3</sup> Tsinghua University</span>
+                </div>
+                <p class="text-lg text-gray-400 mt-3">(* Equal Contribution, † Corresponding Author)</p>
+            </div>
+
+            <div class="flex flex-wrap justify-center space-x-8 mb-12 text-gray-700">
+                <a href="https://wedlm.github.io" class="flex items-center gap-2 hover:text-green-500 transition-colors">
+                    <svg class="w-6 h-6" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M1023.162182 641.303273c0-143.243636-143.243636-260.910545-306.944-260.910546-168.820364 0-306.944 117.666909-306.944 260.910546s133.003636 260.910545 306.944 260.910545c35.816727 0 71.633455-10.24 107.426909-20.456727l97.210182 56.273454-25.576728-92.090181c71.633455-56.273455 127.883636-127.906909 127.883637-204.637091z m-404.130909-46.056728c-20.456727 0-35.816727-15.36-35.816728-35.816727 0-15.336727 20.456727-35.816727 35.816728-35.816727 25.576727 0 46.056727 15.36 46.056727 35.816727-0.023273 15.36-20.48 35.816727-46.056727 35.816727z m194.397091 0c-15.336727 0-35.816727-15.36-35.816728-35.816727 0-15.336727 20.456727-35.816727 35.816728-35.816727 25.576727 0 46.056727 15.36 46.056727 35.816727 0 15.36-15.36 35.816727-46.056727 35.816727z m0 0" fill="#04AE0F" /><path d="M358.097455 104.122182c-199.517091 0-358.120727 133.026909-358.120728 306.967273 0 97.210182 56.273455 179.060364 143.243637 240.453818L107.426909 758.970182l127.906909-61.393455c46.033455 10.24 81.850182 20.456727 127.906909 20.456728h35.816728c-5.12-25.576727-10.216727-51.153455-10.216728-76.730182 0-158.580364 133.003636-286.510545 306.944-286.510546h35.816728C690.641455 211.549091 537.157818 104.122182 358.097455 104.122182z m-112.54691 240.453818c-25.576727 0-56.273455-15.36-56.273454-46.056727 0-25.6 25.6-46.056727 56.273454-46.056728 25.576727 0 46.056727 15.36 46.056728 46.056728-5.12 30.696727-20.456727 46.056727-46.056728 46.056727z m250.693819 0c-25.576727 0-56.273455-15.36-56.273455-46.056727 0-25.6 25.576727-46.056727 56.273455-46.056728 25.576727 0 46.056727 15.36 46.056727 46.056728-0.023273 30.696727-20.48 46.056727-46.056727 46.056727z m0 0" fill="#04AE0F" /></svg>
+                    <span class="font-bold">WeDLM Technical Report</span>
+                </a>
+                <a href="https://github.com/tencent/WeDLM" class="flex items-center gap-2 hover:text-gray-500 transition-colors">
+                    <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0c6.63 0 12 5.276 12 11.79-.001 5.067-3.29 9.567-8.175 11.187-.6.118-.825-.25-.825-.56 0-.398.015-1.665.015-3.242 0-1.105-.375-1.813-.81-2.181 2.67-.295 5.475-1.297 5.475-5.822 0-1.297-.465-2.344-1.23-3.169.12-.295.54-1.503-.12-3.125 0 0-1.005-.324-3.3 1.209a11.32 11.32 0 00-3-.398c-1.02 0-2.04.133-3 .398-2.295-1.518-3.3-1.209-3.3-1.209-.66 1.622-.24 2.83-.12 3.125-.765.825-1.23 1.887-1.23 3.169 0 4.51 2.79 5.527 5.46 5.822-.345.294-.66.81-.765 1.577-.69.31-2.415.81-3.495-.973-.225-.354-.9-1.223-1.845-1.209-1.005.015-.405.56.015.781.51.28 1.095 1.327 1.23 1.666.24.663 1.02 1.93 4.035 1.385 0 .988.015 1.916.015 2.196 0 .31-.225.664-.825.56C3.303 21.374-.003 16.867 0 11.791 0 5.276 5.37 0 12 0z"></path></svg>
+                    <span class="font-bold">GitHub</span>
+                </a>
+                <a href="https://huggingface.co/collections/tencent/wedlm" class="flex items-center gap-2 hover:text-yellow-500 transition-colors">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2.25 11.535c0-3.407 1.847-6.554 4.844-8.258a9.822 9.822 0 019.687 0c2.997 1.704 4.844 4.851 4.844 8.258 0 5.266-4.337 9.535-9.687 9.535S2.25 16.8 2.25 11.535z" fill="#FF9D0B"></path><path d="M11.938 20.086c4.797 0 8.687-3.829 8.687-8.551 0-4.722-3.89-8.55-8.687-8.55-4.798 0-8.688 3.828-8.688 8.55 0 4.722 3.89 8.55 8.688 8.55z" fill="#FFD21E"></path><path d="M11.875 15.113c2.457 0 3.25-2.156 3.25-3.263 0-.576-.393-.394-1.023-.089-.582.283-1.365.675-2.224.675-1.798 0-3.25-1.693-3.25-.586 0 1.107.79 3.263 3.25 3.263h-.003z" fill="#FF323D"></path><path d="M14.76 9.21c.32.108.445.753.767.585.447-.233.707-.708.659-1.204a1.235 1.235 0 00-.879-1.059 1.262 1.262 0 00-1.33.394c-.322.384-.377.92-.14 1.36.153.283.638-.177.925-.079l-.002.003zm-5.887 0c-.32.108-.448.753-.768.585a1.226 1.226 0 01-.658-1.204c.048-.495.395-.913.878-1.059a1.262 1.262 0 011.33.394c.322.384.377.92.14 1.36-.152.283-.64-.177-.925-.079l.003.003zm1.12 5.34a2.166 2.166 0 011.325-1.106c.07-.02.144.06.219.171l.192.306c.069.1.139.175.209.175.074 0 .15-.074.223-.172l.205-.302c.08-.11.157-.188.234-.165.537.168.986.536 1.25 1.026.932-.724 1.275-1.905 1.275-2.633 0-.508-.306-.426-.81-.19l-.616.296c-.52.24-1.148.48-1.824.48-.676 0-1.302-.24-1.823-.48l-.589-.283c-.52-.248-.838-.342-.838.177 0 .703.32 1.831 1.187 2.56l.18.14z" fill="#3A3B45"></path><path d="M17.812 10.366a.806.806 0 00.813-.8c0-.441-.364-.8-.813-.8a.806.806 0 00-.812.8c0 .442.364.8.812.8zm-11.624 0a.806.806 0 00.812-.8c0-.441-.364-.8-.812-.8a.806.806 0 00-.813.8c0 .442.364.8.813.8zM4.515 13.073c-.405 0-.765.162-1.017.46a1.455 1.455 0 00-.333.925 1.801 1.801 0 00-.485-.074c-.387 0-.737.146-.985.409a1.41 1.41 0 00-.2 1.722 1.302 1.302 0 00-.447.694c-.06.222-.12.69.2 1.166a1.267 1.267 0 00-.093 1.236c.238.533.81.958 1.89 1.405l.24.096c.768.3 1.473.492 1.478.494.89.243 1.808.375 2.732.394 1.465 0 2.513-.443 3.115-1.314.93-1.342.842-2.575-.274-3.763l-.151-.154c-.692-.684-1.155-1.69-1.25-1.912-.195-.655-.71-1.383-1.562-1.383-.46.007-.889.233-1.15.605-.25-.31-.495-.553-.715-.694a1.87 1.87 0 00-.993-.312zm14.97 0c.405 0 .767.162 1.017.46.216.262.333.588.333.925.158-.047.322-.071.487-.074.388 0 .738.146.985.409a1.41 1.41 0 01.2 1.722c.22.178.377.422.445.694.06.222.12.69-.2 1.166.244.37.279.836.093 1.236-.238.533-.81.958-1.889 1.405l-.239.096c-.77.3-1.475.492-1.48.494-.89.243-1.808.375-2.732.394-1.465 0-2.513-.443-3.115-1.314-.93-1.342-.842-2.575.274-3.763l.151-.154c.695-.684 1.157-1.69 1.252-1.912.195-.655.708-1.383 1.56-1.383.46.007.889.233 1.15.605.25-.31.495-.553.718-.694.244-.162.523-.265.814-.3l.176-.012z" fill="#FF9D0B"></path><path d="M9.785 20.132c.688-.994.638-1.74-.305-2.667-.945-.928-1.495-2.288-1.495-2.288s-.205-.788-.672-.714c-.468.074-.81 1.25.17 1.971.977.721-.195 1.21-.573.534-.375-.677-1.405-2.416-1.94-2.751-.532-.332-.907-.148-.782.541.125.687 2.357 2.35 2.14 2.707-.218.362-.983-.42-.983-.42S2.953 14.9 2.43 15.46c-.52.558.398 1.026 1.7 1.803 1.308.778 1.41.985 1.225 1.28-.187.295-3.07-2.1-3.34-1.083-.27 1.011 2.943 1.304 2.745 2.006-.2.7-2.265-1.324-2.685-.537-.425.79 2.913 1.718 2.94 1.725 1.075.276 3.813.859 4.77-.522zm4.432 0c-.687-.994-.64-1.74.305-2.667.943-.928 1.493-2.288 1.493-2.288s.205-.788.675-.714c.465.074.807 1.25-.17 1.971-.98.721.195 1.21.57.534.377-.677 1.407-2.416 1.94-2.751.532-.332.91-.148.782.541-.125.687-2.355 2.35-2.137 2.707.215.362.98-.42.98-.42S21.05 14.9 21.57 15.46c.52.558-.395 1.026-1.7 1.803-1.308.778-1.408.985-1.225 1.28.187.295 3.07-2.1 3.34-1.083.27 1.011-2.94 1.304-2.743 2.006.2.7 2.263-1.324 2.685-.537.423.79-2.912 1.718-2.94 1.725-1.077.276-3.815.859-4.77-.522z" fill="#FFD21E"></path></svg>
+                    <span class="font-bold">HuggingFace</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Speed Teaser -->
+    <section id="demo" class="max-w-6xl mx-auto px-4 mb-20">
+        <div class="bg-gray-900 rounded-2xl p-1 shadow-2xl overflow-hidden border border-gray-800">
+            <div class="bg-gray-800 px-4 py-2 flex items-center justify-between">
+                <div class="flex gap-2">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                </div>
+                <div class="text-gray-400 text-xs font-mono">speed_benchmark.py</div>
+                <div>
+                     <button id="replay-btn" class="text-xs px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-500 transition-colors">
+                        Replay Demo
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-700">
+                <!-- vLLM Pane -->
+                <div class="p-6 md:p-8 flex flex-col" style="height: 660px;">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-gray-400 font-bold text-lg flex items-center gap-2">
+                            <span id="vllm-indicator" class="w-2 h-2 bg-gray-500 rounded-full"></span>
+                            vLLM / Autoregressive
+                        </h3>
+                        <span class="font-mono text-gray-500 text-sm">Target: Qwen3-8B</span>
+                    </div>
+                    <div class="font-mono text-gray-300 text-sm leading-relaxed border-l-2 border-gray-700 pl-4 py-1 overflow-y-auto" style="height: 520px;">
+                        <div><span class="text-blue-400 font-bold">User:</span> Calculate the sum of all integers from 1 to 100.</div>
+                        <div class="whitespace-pre-wrap"><span class="text-blue-400 font-bold">Assistant:</span> <span id="vllm-output"></span><span id="vllm-cursor" class="inline-block w-2 h-4 bg-gray-500 ml-1 align-middle opacity-0"></span></div>
+                    </div>
+                    <div class="mt-auto pt-4 border-t border-gray-800 flex justify-between items-end">
+                        <div class="text-xs text-gray-500">Traditional sequential generation</div>
+                        <div class="text-right">
+                            <div id="vllm-timer" class="text-2xl font-bold text-gray-400">0.00s</div>
+                            <div class="text-xs text-gray-500">Latency</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WeDLM Pane -->
+                <div class="p-6 md:p-8 flex flex-col bg-gradient-to-br from-gray-900 to-gray-800" style="height: 660px;">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-green-400 font-bold text-lg flex items-center gap-2">
+                            <span id="wedlm-indicator" class="w-2 h-2 bg-green-500 rounded-full"></span>
+                            WeDLM (Ours)
+                        </h3>
+                         <span class="font-mono text-green-600 text-xs border border-green-900 bg-green-900-20 px-2 py-0.5 rounded">Streaming Parallel</span>
+                    </div>
+                    <div class="font-mono text-white text-sm leading-relaxed border-l-2 border-green-900-50 pl-4 py-1 overflow-y-auto" style="height: 520px;">
+                        <div><span class="text-green-400 font-bold">User:</span> Calculate the sum of all integers from 1 to 100.</div>
+                        <div class="whitespace-pre-wrap"><span class="text-green-400 font-bold">Assistant:</span> <span id="wedlm-output"></span><span id="wedlm-cursor" class="inline-block w-2 h-4 bg-green-500 ml-1 opacity-0"></span></div>
+                    </div>
+                    <div class="mt-auto pt-4 border-t border-gray-700 flex justify-between items-end">
+                        <div class="text-xs text-green-500 text-opacity-80">3~10x Speedup</div>
+                        <div class="text-right">
+                            <div id="wedlm-timer" class="text-4xl font-bold text-green-400">0.00s</div>
+                            <div class="text-xs text-green-500 text-opacity-80">Latency</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+         <p class="text-center text-lg text-gray-500 mt-4">
+            * WeDLM achieves significantly lower latency by predicting future tokens in parallel blocks.
+        </p>
+    </section>
+
+    <!-- Abstract -->
+    <section id="abstract" class="bg-white py-24 border-t border-gray-200">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-12">
+                 <h2 class="text-3xl md:text-4xl font-bold text-gray-900 font-display">
+                    Abstract
+                </h2>
+            </div>
+            <div class="text-lg md:text-xl text-gray-700 leading-relaxed text-justify hyphens-auto space-y-6">
+                <p>Autoregressive (AR) generation is the standard decoding paradigm for Large Language Models (LLMs), but its token-by-token nature limits parallelism at inference time. Diffusion Language Models (DLLMs) offer parallel decoding by recovering multiple masked tokens per step; however, in practice they often fail to translate this parallelism into deployment speed gains over optimized AR engines (e.g., vLLM). A key reason is that many DLLMs rely on bidirectional attention, which breaks standard prefix KV caching and forces repeated contextualization, undermining efficiency.</p> 
+                <p>We propose <strong>WeDLM</strong>, a diffusion decoding framework built entirely on <em>standard causal attention</em> to make parallel generation prefix-cache friendly. The core idea is to let each masked position condition on all currently observed tokens <em>while keeping a strict causal mask</em>, achieved by <strong>Topological Reordering</strong> that moves observed tokens to the physical prefix while preserving their logical positions. Building on this property, we introduce a streaming decoding procedure that continuously commits confident tokens into a growing left-to-right prefix and maintains a fixed parallel workload, avoiding the stop-and-wait behavior common in <em>block diffusion</em> methods.</p>
+                <p>Experiments show that <strong>WeDLM</strong> preserves the quality of strong AR backbones while delivering substantial speedups, approaching <strong>3×</strong> on challenging reasoning benchmarks and up to <strong>10×</strong> in low-entropy generation regimes; critically, <strong>our comparisons are against AR baselines served by vLLM under matched deployment settings</strong>, demonstrating that diffusion-style decoding can outperform an optimized AR engine in practice.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Contributions -->
+    <section class="py-24 bg-white border-t border-gray-200">
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-16 font-display text-gray-900">Key Contributions</h2>
+            <div class="grid md:grid-cols-2 gap-8 lg:gap-10">
+                <!-- Contribution 1 -->
+                <div class="group p-8 rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-lg hover:border-green-100 transition-all duration-300 flex items-start gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-14 h-14 rounded-xl bg-green-50 text-green-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
+                            <svg class="w-8 h-8 fill-current" viewBox="0 0 448 512"><path d="M128 240v-48c0-17.7 14.3-32 32-32h160l-32 32 45.3 45.3L448 122.7 333.3 8 288 53.3l32 32H160c-44.2 0-80 35.8-80 80v74.7l48-48V240zM320 272v48c0 17.7-14.3 32-32 32H128l32-32-45.3-45.3L0 389.3 114.7 504 160 458.7l-32-32h160c44.2 0 80-35.8 80-80v-74.7l-48 48V272z"/></svg>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-green-700 transition-colors">Causal Diffusion</h3>
+                        <p class="text-gray-600 text-base leading-relaxed">We propose WeDLM, a DLLM framework that performs mask recovery entirely under causal attention via <em>Topological Reordering</em>. This design enables seamless initialization from pre-trained AR checkpoints and inherent prefix-cache compatibility.</p>
+                    </div>
+                </div>
+                <!-- Contribution 2 -->
+                <div class="group p-8 rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-lg hover:border-green-100 transition-all duration-300 flex items-start gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-14 h-14 rounded-xl bg-green-50 text-green-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
+                             <svg class="w-8 h-8 fill-current" viewBox="0 0 640 512"><path d="M384 96v224H64V96h320zM64 32C28.7 32 0 60.7 0 96v224c0 35.3 28.7 64 64 64h117.3l-10.7 32H96c-17.7 0-32 14.3-32 32s14.3 32 32 32h256c17.7 0 32-14.3 32-32s-14.3-32-32-32h-74.7l-10.7-32H384c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm464 0c-26.5 0-48 21.5-48 48V432c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V80c0-26.5-21.5-48-48-48H528zm16 64h32v32h-32V96zm0 64h32v32h-32v-32zm0 64h32v32h-32v-32zm0 64h32v32h-32v-32z"/></svg>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-green-700 transition-colors">Prefix-Cache Compatibility</h3>
+                        <p class="text-gray-600 text-base leading-relaxed">Predicted tokens can be cached immediately without waiting for subsequent positions. The strict causal mask ensures KV states depend only on committed context and can be reused immediately.</p>
+                    </div>
+                </div>
+                <!-- Contribution 3 -->
+                <div class="group p-8 rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-lg hover:border-green-100 transition-all duration-300 flex items-start gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-14 h-14 rounded-xl bg-green-50 text-green-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
+                             <svg class="w-8 h-8 fill-current" viewBox="0 0 512 512"><path d="M16 128h416c8.8 0 16-7.2 16-16V48c0-8.8-7.2-16-16-16H16C7.2 32 0 39.2 0 48v64c0 8.8 7.2 16 16 16zm480 80H80c-8.8 0-16 7.2-16 16v64c0 8.8 7.2 16 16 16h416c8.8 0 16-7.2 16-16v-64c0-8.8-7.2-16-16-16zm-64 176H16c-8.8 0-16 7.2-16 16v64c0 8.8 7.2 16 16 16h416c8.8 0 16-7.2 16-16v-64c0-8.8-7.2-16-16-16z"/></svg>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-green-700 transition-colors">Streaming Parallel Decoding</h3>
+                        <p class="text-gray-600 text-base leading-relaxed">A decoding strategy with distance penalty that promotes left-to-right resolution, and a dynamic sliding window that continuously refills new masks as finalized tokens are committed—eliminating the stop-and-wait bottleneck of block-wise methods.</p>
+                    </div>
+                </div>
+                <!-- Contribution 4 -->
+                <div class="group p-8 rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-lg hover:border-green-100 transition-all duration-300 flex items-start gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-14 h-14 rounded-xl bg-green-50 text-green-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
+                             <svg class="w-8 h-8 fill-current" viewBox="0 0 512 512"><path d="M496 256c0 137-111 248-248 248S0 393 0 256 111 8 248 8s248 111 248 248zm-165.8-6.2l-61.6-35.6c5.4-9.9 8.4-21.2 8.4-33.2 0-39.8-32.2-72-72-72s-72 32.2-72 72 32.2 72 72 72c7.8 0 15.2-1.3 22.2-3.6l57.3 49.6c4.5 3.9 11.2 3.4 15.1-1.1l30.6-35.3c3.9-4.5 3.4-11.3-1.1-15.2zM128 272c0-17.7 14.3-32 32-32s32 14.3 32 32-14.3 32-32 32-32-14.3-32-32z"/></svg>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-green-700 transition-colors">First DLLM to Outperform Industrial AR Engines</h3>
+                        <p class="text-gray-600 text-base leading-relaxed">We demonstrate that WeDLM surpasses optimized vLLM baselines in wall-clock speed, achieving more than <strong>3×</strong> speedups on complex reasoning tasks while maintaining generation quality.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Performance -->
+    <section id="performance" class="py-24 px-4 max-w-7xl mx-auto border-t border-gray-200">
+        <h2 class="text-3xl font-bold text-center mb-16 font-display text-gray-900">Performance Overview</h2>
+        
+        <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+            <div class="flex flex-col items-center">
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-2 w-full hover:shadow-xl transition-shadow duration-300">
+                    <div class="relative w-full" style="padding-bottom: 75%; overflow: hidden;">
+                        <img loading="lazy" src="figs/fig1a.svg" alt="Performance-Speed Trade-off" class="absolute top-0 left-0 w-full h-full object-contain rounded-xl" />
+                    </div>
+                </div>
+                <p class="mt-6 text-gray-600 text-base text-center max-w-lg leading-relaxed">
+                    <strong>Speed vs. Accuracy.</strong> WeDLM-8B (Star) achieves ~3x speedup over vLLM-optimized Qwen3-8B while maintaining high accuracy, significantly outperforming prior diffusion models.
+                </p>
+            </div>
+            <div class="flex flex-col items-center">
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-2 w-full hover:shadow-xl transition-shadow duration-300">
+                    <div class="relative w-full" style="padding-bottom: 75%; overflow: hidden;">
+                        <img loading="lazy" src="figs/fig1b.svg" alt="Holistic Capability" class="absolute top-0 left-0 w-full h-full object-contain rounded-xl" />
+                    </div>
+                </div>
+                 <p class="mt-6 text-gray-600 text-base text-center max-w-lg leading-relaxed">
+                    <strong>Holistic Capability.</strong> WeDLM matches or surpasses the strong capabilities of the Qwen3-8B-Instruct baseline across math, coding, and general knowledge benchmarks.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Methodology -->
+    <section id="method" class="py-24 bg-white relative overflow-hidden border-t border-gray-200">
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+             <div class="absolute top-0 left-0 bg-blue-50 opacity-50 rounded-full blur-3xl transform -translate-x-1/2 -translate-y-1/2" style="width: 500px; height: 500px;"></div>
+             <div class="absolute bottom-0 right-0 bg-green-50 opacity-50 rounded-full blur-3xl transform translate-x-1/3 translate-y-1/3" style="width: 600px; height: 600px;"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-20">
+                <h2 class="text-4xl font-bold font-display text-gray-900 mb-6">Methodology</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                    WeDLM introduces two key innovations to bridge the architectural gap between Diffusion Language Models and standard Causal Attention mechanisms.
+                </p>
+            </div>
+
+            <!-- ========== Part 1: Training ========== -->
+            <div class="mb-32">
+                <!-- Section Header -->
+                <div class="flex items-center gap-4 mb-10">
+                    <span class="flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 text-2xl font-bold shadow-sm">01</span>
+                    <div>
+                        <span class="text-sm font-bold text-blue-600 uppercase tracking-wider">WeDLM Training</span>
+                        <h3 class="text-3xl font-bold text-gray-900">Causal Mask Recovery</h3>
+                    </div>
+                </div>
+
+                <!-- Training Figure -->
+                <div class="mb-12">
+                    <div class="bg-white rounded-2xl shadow-lg border border-blue-100 p-4 hover:shadow-xl transition-shadow duration-300 overflow-hidden max-w-5xl mx-auto">
+                        <img loading="lazy" src="figs/wedlm-training.svg" alt="WeDLM Training Framework" class="w-full h-auto object-contain" />
+                    </div>
+                    <p class="mt-4 text-gray-600 text-sm text-center max-w-4xl mx-auto leading-relaxed">
+                        <strong>Overview of the WeDLM training framework.</strong> 
+                        <span class="text-blue-600">Left:</span> <em>Topological Reordering</em> physically shifts observed tokens to the prefix while preserving logical positions. 
+                        <span class="text-blue-600">Right:</span> <em>Dual-Stream Masking</em> concatenates a clean Memory Stream with a masked Prediction Stream.
+                    </p>
+                </div>
+
+                <!-- Training Demo + Description -->
+                <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                 <div class="order-2 lg:order-1">
+                        <h4 class="text-xl font-bold text-gray-900 mb-4">Topological Reordering</h4>
+                        <p class="text-gray-700 leading-relaxed mb-4">
+                            Standard Causal Attention uses a lower-triangular mask, hiding future tokens. WeDLM resolves this by <strong>decoupling physical memory order from logical position IDs</strong>.
+                        </p>
+                        <ul class="space-y-3 text-gray-600">
+                            <li class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-blue-500 mt-0.5 fill-current flex-shrink-0" viewBox="0 0 512 512"><path d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628 0z"/></svg>
+                                <span>Separates logical semantics (RoPE) from physical computation.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-blue-500 mt-0.5 fill-current flex-shrink-0" viewBox="0 0 512 512"><path d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628 0z"/></svg>
+                                <span>Moves 'Observed' tokens to the physical start of the sequence.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-blue-500 mt-0.5 fill-current flex-shrink-0" viewBox="0 0 512 512"><path d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628 0z"/></svg>
+                                <span>Enables 'Noisy' tokens to attend to known futures via standard masks.</span>
+                            </li>
+                        </ul>
+                    </div>
+                
+                    <div class="order-1 lg:order-2 relative group">
+                        <div class="absolute -inset-4 bg-gradient-to-tr from-blue-50 to-gray-50 rounded-3xl transform rotate-2 -z-10 group-hover:rotate-1 transition-transform duration-500"></div>
+                        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col h-full relative z-10" style="min-height: 380px;">
+                            <div class="bg-white-90 backdrop-blur border-b border-gray-100 p-4 flex justify-between items-center">
+                                <div class="flex gap-2" id="topo-dots"></div>
+                                <div class="text-xs font-mono text-gray-500 uppercase tracking-wider font-bold" id="topo-label">Logical View</div>
+                            </div>
+                            <div class="p-6 flex-grow flex flex-col items-center justify-center relative">
+                                <div class="absolute top-4 w-full text-center px-4">
+                                     <p id="topo-desc" class="text-sm font-medium text-gray-600 leading-relaxed transition-opacity duration-300"></p>
+                                </div>
+                                <div id="topo-tokens" class="flex gap-3 mt-12 transition-all duration-700"></div>
+                                <div id="topo-legend" class="mt-8 flex flex-wrap justify-center gap-6 text-xs text-gray-500 opacity-0 transition-opacity">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-3 h-3 bg-blue-50 border border-blue-200 rounded"></span><span>KV Cache</span>
+                                    </div>
+                                     <div class="flex items-center gap-2">
+                                        <span class="w-3 h-3 bg-gray-50 border border-gray-300 border-dashed rounded"></span><span>Active Query</span>
+                                    </div>
+                                </div>
+                            </div>
+                             <div class="bg-gray-50 p-3 border-t border-gray-100 flex justify-center">
+                                <button id="topo-next-btn" class="group bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:shadow-md px-5 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2">
+                                    Next Step 
+                                    <svg class="w-3.5 h-3.5 fill-current group-hover:translate-x-1 transition-transform" viewBox="0 0 448 512"><path d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"/></svg>
+                                </button>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== Part 2: Inference ========== -->
+            <!-- Divider between Part 1 and Part 2 -->
+            <div class="flex items-center justify-center mb-16">
+                <div class="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent w-64"></div>
+            </div>
+
+            <div>
+                <!-- Section Header -->
+                <div class="flex items-center gap-4 mb-10">
+                    <span class="flex items-center justify-center w-14 h-14 rounded-2xl bg-green-100 text-green-600 text-2xl font-bold shadow-sm">02</span>
+                    <div>
+                        <span class="text-sm font-bold text-green-600 uppercase tracking-wider">WeDLM Inference</span>
+                        <h3 class="text-3xl font-bold text-gray-900">Streaming Parallel Decoding</h3>
+                    </div>
+                </div>
+
+                <!-- Inference Figure -->
+                <div class="mb-12">
+                    <div class="bg-white rounded-2xl shadow-lg border border-green-100 p-4 hover:shadow-xl transition-shadow duration-300 overflow-hidden max-w-5xl mx-auto">
+                        <img loading="lazy" src="figs/wedlm-inference.svg" alt="WeDLM Streaming Parallel Decoding" class="w-full h-auto object-contain" />
+                    </div>
+                    <p class="mt-4 text-gray-600 text-sm text-center max-w-4xl mx-auto leading-relaxed">
+                        <strong>Block Decoding vs. WeDLM Streaming Parallel Decoding.</strong> 
+                        Block decoding suffers from stop-and-wait. In contrast, <span class="text-green-600">WeDLM</span> uses standard causal attention with a dynamic sliding window: resolved tokens are immediately cache-ready and committed.
+                    </p>
+                </div>
+
+                <!-- Inference Demo + Description -->
+                <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                    <div class="order-1 relative group">
+                        <div class="absolute -inset-4 bg-gradient-to-bl from-green-50 to-gray-50 rounded-3xl transform -rotate-2 -z-10 group-hover:-rotate-1 transition-transform duration-500"></div>
+                        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col h-full relative z-10" style="min-height: 380px;">
+                            <div class="bg-white-90 backdrop-blur border-b border-gray-100 p-4 flex justify-between items-center">
+                                <div class="flex gap-2" id="stream-dots"></div>
+                                 <div class="text-xs font-mono text-gray-500 uppercase tracking-wider font-bold" id="stream-label">Step 1: Diffuse</div>
+                            </div>
+                            <div class="p-6 flex-grow flex flex-col items-center justify-center relative">
+                                 <div class="absolute top-4 w-full text-center px-4">
+                                     <p id="stream-desc" class="text-sm font-medium text-gray-600 leading-relaxed"></p>
+                                </div>
+                                <div class="flex items-center gap-2 sm:gap-3 mt-12 relative p-2 sm:p-4">
+                                    <div id="stream-window" class="absolute -top-2 -bottom-2 border-2 border-green-500 rounded-xl bg-green-50-20 transition-all duration-500 ease-out pointer-events-none z-0" style="left: 10px; width: 280px;">
+                                         <div class="absolute -top-3 right-0 bg-green-500 text-white text-xs px-2 rounded-full shadow-sm" style="font-size: 10px;">Active Window</div>
+                                    </div>
+                                    <div id="stream-tokens" class="flex gap-2 sm:gap-3 relative z-10"></div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 p-3 border-t border-gray-100 flex justify-center">
+                                <button id="stream-next-btn" class="group bg-white border border-gray-200 text-gray-600 hover:text-green-600 hover:border-green-300 hover:shadow-md px-5 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2">
+                                    Next Step 
+                                    <svg class="w-3.5 h-3.5 fill-current group-hover:translate-x-1 transition-transform" viewBox="0 0 448 512"><path d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="order-2">
+                        <h4 class="text-xl font-bold text-gray-900 mb-4">Dynamic Sliding Window</h4>
+                        <p class="text-gray-700 leading-relaxed mb-4">
+                            Traditional block-wise decoding suffers from "stop-and-wait" overhead. WeDLM introduces a <strong>Dynamic Sliding Window</strong> that eliminates pipeline bubbles.
+                        </p>
+                        <ul class="space-y-3 text-gray-600">
+                            <li class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-green-500 mt-0.5 fill-current flex-shrink-0" viewBox="0 0 512 512"><path d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628 0z"/></svg>
+                                <span>Asynchronous Commit: Finalize tokens as soon as confident.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-green-500 mt-0.5 fill-current flex-shrink-0" viewBox="0 0 512 512"><path d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628 0z"/></svg>
+                                <span>Zero Bubbles: Immediately slide window to ingest new tokens.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-green-500 mt-0.5 fill-current flex-shrink-0" viewBox="0 0 512 512"><path d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628 0z"/></svg>
+                                <span>Maintains high GPU saturation unlike block-wise methods.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results (Tables) -->
+    <section id="results" class="py-24 bg-white relative overflow-hidden border-t border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-20">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
+                    Experimental Results
+                </h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                    WeDLM achieves state-of-the-art performance, consistently outperforming optimized AR engines (vLLM) and prior diffusion models across mathematical reasoning and code generation tasks.
+                </p>
+            </div>
+            
+            <div class="flex flex-col gap-8 items-center">
+                <div class="w-full max-w-6xl" id="tables-container"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Case Study -->
+    <section class="py-20 bg-white px-4 border-t border-gray-100">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-8 font-display text-gray-900">Case Study: Low-Entropy Generation</h2>
+            
+            <div class="bg-gray-50 border border-gray-200 rounded-2xl p-8 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-green-100 rounded-full blur-3xl opacity-50"></div>
+
+                <div class="flex flex-col lg:flex-row gap-10 items-start relative z-10">
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">The "Counting" Task</h3>
+                        <p class="text-gray-700 mb-6 leading-relaxed">
+                            As analyzed in the paper, WeDLM achieves peak throughput on low-entropy tasks. 
+                            In this counting task (1 to 200), the model resolves <strong>8.10 tokens per forward pass</strong> on average because the pattern is highly predictable.
+                        </p>
+                        <div class="bg-gray-900 text-gray-100 p-5 rounded-xl font-mono text-sm overflow-x-auto shadow-inner border border-gray-800">
+                            <div class="mb-2">
+                                <span class="text-green-400 font-bold">User:</span> Count from 1 to 200
+                            </div>
+                            <div>
+                                <span class="text-blue-400 font-bold">Assistant:</span> Sure! Here are the numbers from 1 to 200:<br/>
+                                <span class="text-gray-400">1, 2, 3, 4, 5, ...</span> 
+                                <span class="text-yellow-200 bg-yellow-900 bg-opacity-30 px-1 rounded mx-1">[WeDLM generates strictly correct sequence]</span> 
+                                <span class="text-gray-400">... 199, 200.</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="lg:w-1/3 w-full flex flex-col gap-4">
+                        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center">
+                            <div class="text-5xl font-bold text-green-600 mb-1 tracking-tight">1673.3</div>
+                            <div class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Tokens / Sec</div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+                                    <div class="text-2xl font-bold text-blue-600 mb-1">0.038</div>
+                                    <div class="text-xs text-gray-500 uppercase font-semibold" style="font-size: 10px;">Avg Entropy</div>
+                            </div>
+                            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+                                    <div class="text-2xl font-bold text-purple-600 mb-1">14.17</div>
+                                    <div class="text-xs text-gray-500 uppercase font-semibold" style="font-size: 10px;">Tokens/Pass</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BibTex -->
+    <section class="py-24 max-w-5xl mx-auto px-4 border-t border-gray-200">
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold font-display text-gray-900 mb-3">BibTeX (Coming Soon)</h2>
+            <p class="text-gray-600 text-base">
+                📚 Want to learn more? 
+                <a href="https://wedlm.github.io" class="mx-1 text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors">
+                    Read our Technical Report
+                </a>
+                for full details on WeDLM methodology! 🚀
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-12 mt-12">
+        <div class="max-w-5xl mx-auto px-4 text-center">
+            <div class="flex justify-center space-x-8 mb-6 text-gray-700">
+                <a href="https://wedlm.github.io" class="flex items-center gap-2 hover:text-green-500 transition-colors">
+                    <svg class="w-6 h-6" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M1023.162182 641.303273c0-143.243636-143.243636-260.910545-306.944-260.910546-168.820364 0-306.944 117.666909-306.944 260.910546s133.003636 260.910545 306.944 260.910545c35.816727 0 71.633455-10.24 107.426909-20.456727l97.210182 56.273454-25.576728-92.090181c71.633455-56.273455 127.883636-127.906909 127.883637-204.637091z m-404.130909-46.056728c-20.456727 0-35.816727-15.36-35.816728-35.816727 0-15.336727 20.456727-35.816727 35.816728-35.816727 25.576727 0 46.056727 15.36 46.056727 35.816727-0.023273 15.36-20.48 35.816727-46.056727 35.816727z m194.397091 0c-15.336727 0-35.816727-15.36-35.816728-35.816727 0-15.336727 20.456727-35.816727 35.816728-35.816727 25.576727 0 46.056727 15.36 46.056727 35.816727 0 15.36-15.36 35.816727-46.056727 35.816727z m0 0" fill="#04AE0F" /><path d="M358.097455 104.122182c-199.517091 0-358.120727 133.026909-358.120728 306.967273 0 97.210182 56.273455 179.060364 143.243637 240.453818L107.426909 758.970182l127.906909-61.393455c46.033455 10.24 81.850182 20.456727 127.906909 20.456728h35.816728c-5.12-25.576727-10.216727-51.153455-10.216728-76.730182 0-158.580364 133.003636-286.510545 306.944-286.510546h35.816728C690.641455 211.549091 537.157818 104.122182 358.097455 104.122182z m-112.54691 240.453818c-25.576727 0-56.273455-15.36-56.273454-46.056727 0-25.6 25.6-46.056727 56.273454-46.056728 25.576727 0 46.056727 15.36 46.056728 46.056728-5.12 30.696727-20.456727 46.056727-46.056728 46.056727z m250.693819 0c-25.576727 0-56.273455-15.36-56.273455-46.056727 0-25.6 25.576727-46.056727 56.273455-46.056728 25.576727 0 46.056727 15.36 46.056727 46.056728-0.023273 30.696727-20.48 46.056727-46.056727 46.056727z m0 0" fill="#04AE0F" /></svg>
+                    <span class="font-bold">WeDLM Technical Report</span>
+                </a>
+                <a href="https://github.com/tencent/WeDLM" class="flex items-center gap-2 hover:text-gray-500 transition-colors">
+                    <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0c6.63 0 12 5.276 12 11.79-.001 5.067-3.29 9.567-8.175 11.187-.6.118-.825-.25-.825-.56 0-.398.015-1.665.015-3.242 0-1.105-.375-1.813-.81-2.181 2.67-.295 5.475-1.297 5.475-5.822 0-1.297-.465-2.344-1.23-3.169.12-.295.54-1.503-.12-3.125 0 0-1.005-.324-3.3 1.209a11.32 11.32 0 00-3-.398c-1.02 0-2.04.133-3 .398-2.295-1.518-3.3-1.209-3.3-1.209-.66 1.622-.24 2.83-.12 3.125-.765.825-1.23 1.887-1.23 3.169 0 4.51 2.79 5.527 5.46 5.822-.345.294-.66.81-.765 1.577-.69.31-2.415.81-3.495-.973-.225-.354-.9-1.223-1.845-1.209-1.005.015-.405.56.015.781.51.28 1.095 1.327 1.23 1.666.24.663 1.02 1.93 4.035 1.385 0 .988.015 1.916.015 2.196 0 .31-.225.664-.825.56C3.303 21.374-.003 16.867 0 11.791 0 5.276 5.37 0 12 0z"></path></svg>
+                    <span class="font-bold">GitHub</span>
+                </a>
+                <a href="https://huggingface.co/collections/tencent/wedlm" class="flex items-center gap-2 hover:text-yellow-500 transition-colors">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2.25 11.535c0-3.407 1.847-6.554 4.844-8.258a9.822 9.822 0 019.687 0c2.997 1.704 4.844 4.851 4.844 8.258 0 5.266-4.337 9.535-9.687 9.535S2.25 16.8 2.25 11.535z" fill="#FF9D0B"></path><path d="M11.938 20.086c4.797 0 8.687-3.829 8.687-8.551 0-4.722-3.89-8.55-8.687-8.55-4.798 0-8.688 3.828-8.688 8.55 0 4.722 3.89 8.55 8.688 8.55z" fill="#FFD21E"></path><path d="M11.875 15.113c2.457 0 3.25-2.156 3.25-3.263 0-.576-.393-.394-1.023-.089-.582.283-1.365.675-2.224.675-1.798 0-3.25-1.693-3.25-.586 0 1.107.79 3.263 3.25 3.263h-.003z" fill="#FF323D"></path><path d="M14.76 9.21c.32.108.445.753.767.585.447-.233.707-.708.659-1.204a1.235 1.235 0 00-.879-1.059 1.262 1.262 0 00-1.33.394c-.322.384-.377.92-.14 1.36.153.283.638-.177.925-.079l-.002.003zm-5.887 0c-.32.108-.448.753-.768.585a1.226 1.226 0 01-.658-1.204c.048-.495.395-.913.878-1.059a1.262 1.262 0 011.33.394c.322.384.377.92.14 1.36-.152.283-.64-.177-.925-.079l.003.003zm1.12 5.34a2.166 2.166 0 011.325-1.106c.07-.02.144.06.219.171l.192.306c.069.1.139.175.209.175.074 0 .15-.074.223-.172l.205-.302c.08-.11.157-.188.234-.165.537.168.986.536 1.25 1.026.932-.724 1.275-1.905 1.275-2.633 0-.508-.306-.426-.81-.19l-.616.296c-.52.24-1.148.48-1.824.48-.676 0-1.302-.24-1.823-.48l-.589-.283c-.52-.248-.838-.342-.838.177 0 .703.32 1.831 1.187 2.56l.18.14z" fill="#3A3B45"></path><path d="M17.812 10.366a.806.806 0 00.813-.8c0-.441-.364-.8-.813-.8a.806.806 0 00-.812.8c0 .442.364.8.812.8zm-11.624 0a.806.806 0 00.812-.8c0-.441-.364-.8-.812-.8a.806.806 0 00-.813.8c0 .442.364.8.813.8zM4.515 13.073c-.405 0-.765.162-1.017.46a1.455 1.455 0 00-.333.925 1.801 1.801 0 00-.485-.074c-.387 0-.737.146-.985.409a1.41 1.41 0 00-.2 1.722 1.302 1.302 0 00-.447.694c-.06.222-.12.69.2 1.166a1.267 1.267 0 00-.093 1.236c.238.533.81.958 1.89 1.405l.24.096c.768.3 1.473.492 1.478.494.89.243 1.808.375 2.732.394 1.465 0 2.513-.443 3.115-1.314.93-1.342.842-2.575-.274-3.763l-.151-.154c-.692-.684-1.155-1.69-1.25-1.912-.195-.655-.71-1.383-1.562-1.383-.46.007-.889.233-1.15.605-.25-.31-.495-.553-.715-.694a1.87 1.87 0 00-.993-.312zm14.97 0c.405 0 .767.162 1.017.46.216.262.333.588.333.925.158-.047.322-.071.487-.074.388 0 .738.146.985.409a1.41 1.41 0 01.2 1.722c.22.178.377.422.445.694.06.222.12.69-.2 1.166.244.37.279.836.093 1.236-.238.533-.81.958-1.889 1.405l-.239.096c-.77.3-1.475.492-1.48.494-.89.243-1.808.375-2.732.394-1.465 0-2.513-.443-3.115-1.314-.93-1.342-.842-2.575.274-3.763l.151-.154c.695-.684 1.157-1.69 1.252-1.912.195-.655.708-1.383 1.56-1.383.46.007.889.233 1.15.605.25-.31.495-.553.718-.694.244-.162.523-.265.814-.3l.176-.012z" fill="#FF9D0B"></path><path d="M9.785 20.132c.688-.994.638-1.74-.305-2.667-.945-.928-1.495-2.288-1.495-2.288s-.205-.788-.672-.714c-.468.074-.81 1.25.17 1.971.977.721-.195 1.21-.573.534-.375-.677-1.405-2.416-1.94-2.751-.532-.332-.907-.148-.782.541.125.687 2.357 2.35 2.14 2.707-.218.362-.983-.42-.983-.42S2.953 14.9 2.43 15.46c-.52.558.398 1.026 1.7 1.803 1.308.778 1.41.985 1.225 1.28-.187.295-3.07-2.1-3.34-1.083-.27 1.011 2.943 1.304 2.745 2.006-.2.7-2.265-1.324-2.685-.537-.425.79 2.913 1.718 2.94 1.725 1.075.276 3.813.859 4.77-.522zm4.432 0c-.687-.994-.64-1.74.305-2.667.943-.928 1.493-2.288 1.493-2.288s.205-.788.675-.714c.465.074.807 1.25-.17 1.971-.98.721.195 1.21.57.534.377-.677 1.407-2.416 1.94-2.751.532-.332.91-.148.782.541-.125.687-2.355 2.35-2.137 2.707.215.362.98-.42.98-.42S21.05 14.9 21.57 15.46c.52.558-.395 1.026-1.7 1.803-1.308.778-1.408.985-1.225 1.28.187.295 3.07-2.1 3.34-1.083.27 1.011-2.94 1.304-2.743 2.006.2.7 2.263-1.324 2.685-.537.423.79-2.912 1.718-2.94 1.725-1.077.276-3.815.859-4.77-.522z" fill="#FFD21E"></path></svg>
+                    <span class="font-bold">HuggingFace</span>
+                </a>
+            </div>
+            <p class="text-gray-500 text-sm">
+                Project page for WeDLM (Tencent WeChat AI).
+            </p>
+        </div>
+    </footer>
+
+    <!-- LOGIC SCRIPT - Deferred for performance -->
+    <script defer>
+        // Icons SVG paths
+        const ICONS = {
+            'check': `<svg class="w-3 h-3 fill-current" viewBox="0 0 512 512"><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg>`,
+            'spinner': `<svg class="w-3 h-3 fill-current animate-spin" viewBox="0 0 512 512"><path d="M304 48c0 26.51-21.49 48-48 48s-48-21.49-48-48 21.49-48 48-48 48 21.49 48 48zm-48 368c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48zm208-208c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48zM96 256c0-26.51-21.49-48-48-48S0 229.49 0 256s21.49 48 48 48 48-21.49 48-48zm12.922 99.078c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48c0-26.509-21.491-48-48-48zm294.156 0c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48c0-26.509-21.49-48-48-48zM108.922 60.922c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.491-48-48-48z"/></svg>`,
+            'plus': `<svg class="w-3 h-3 fill-current" viewBox="0 0 448 512"><path d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"/></svg>`,
+            'clock': `<svg class="w-3 h-3 fill-current" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm61.8-104.4l-84.9-61.7c-3.1-2.3-4.9-5.9-4.9-9.7V116c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v141.7l66.8 48.6c5.4 3.9 6.5 11.4 2.6 16.8L334.6 349c-3.9 5.3-11.4 6.5-16.8 2.6z"/></svg>`,
+            'arrow-right': `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 448 512"><path d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"/></svg>`,
+            'rotate-right': `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 512 512"><path d="M480 256c0 123.4-100.5 223.9-223.9 223.9c-48.86 0-95.19-15.58-134.2-44.86c-14.14-10.59-17-30.66-6.391-44.81c10.61-14.09 30.69-16.97 44.8-6.375c27.84 20.91 61 31.94 95.89 31.94C344.3 415.8 416 344.1 416 256s-71.67-159.8-159.8-159.8C205.9 96.22 158.6 120.3 128.6 160H192c17.67 0 32 14.31 32 32S209.7 224 192 224H48c-17.67 0-32-14.31-32-32V48c0-17.69 14.33-32 32-32s32 14.31 32 32v70.23C122.1 64.58 187.9 32.11 256.1 32.11C379.5 32.11 480 132.6 480 256z"/></svg>`
+        };
+
+        // Math HTML for demo
+        const MATH_HTML = {
+            ar_formula_1: `<div class="font-mono">Sum = n/2 * (first number + last number)</div>`,
+            ar_formula_2: `<div class="font-mono">Sum = 100/2 * (1 + 100) = 50 * 101 = 5050</div>`,
+            n: `<i class="font-serif font-italic">n</i>`,
+            n_100: `<i class="font-serif font-italic">n</i> = 100`,
+            wedlm_formula_1: `S = <span class="inline-flex flex-col items-center align-middle mx-1 font-serif" style="vertical-align:middle"><span class="border-b border-current pb-0.5 mb-0.5 leading-none">n(n+1)</span><span class="leading-none">2</span></span>`,
+            wedlm_formula_2: `S = <span class="inline-flex flex-col items-center align-middle mx-1 font-serif" style="vertical-align:middle"><span class="border-b border-current pb-0.5 mb-0.5 leading-none">100(100+1)</span><span class="leading-none">2</span></span> = <span class="inline-flex flex-col items-center align-middle mx-1 font-serif" style="vertical-align:middle"><span class="border-b border-current pb-0.5 mb-0.5 leading-none">100 × 101</span><span class="leading-none">2</span></span> = <span class="inline-flex flex-col items-center align-middle mx-1 font-serif" style="vertical-align:middle"><span class="border-b border-current pb-0.5 mb-0.5 leading-none">10100</span><span class="leading-none">2</span></span> = 5050`,
+            boxed_5050: `<span class="border border-current px-1 inline-block">5050</span>`
+        };
+
+        const AR_DEMO_CHUNKS = [
+            { type: 'text', content: "To find the sum of all integers from 1 to 100, you can use the formula for the sum of an arithmetic series:\n\n" },
+            { type: 'block-math', content: MATH_HTML.ar_formula_1 },
+            { type: 'text', content: "\n\nwhere n is the number of terms in the series. In this case, the first number is 1, the last number is 100, and there are 100 terms in the series.\n\nSo, the sum of all integers from 1 to 100 is:\n\n" },
+            { type: 'block-math', content: MATH_HTML.ar_formula_2 },
+            { type: 'text', content: "\n\nTherefore, the sum of all integers from 1 to 100 is 5050." }
+        ];
+
+        const WEDLM_DEMO_CHUNKS = [
+            { type: 'text', content: "To calculate the sum of all integers from 1 to 100, we can use the formula for the sum of the first " },
+            { type: 'math', content: MATH_HTML.n },
+            { type: 'text', content: " positive integers. The formula is given by:\n\n" },
+            { type: 'block-math', content: MATH_HTML.wedlm_formula_1 },
+            { type: 'text', content: "\n\nwhere " },
+            { type: 'math', content: MATH_HTML.n },
+            { type: 'text', content: " is the last integer in the sequence. In this problem, " },
+            { type: 'math', content: MATH_HTML.n_100 },
+            { type: 'text', content: ". Plugging in the value of " },
+            { type: 'math', content: MATH_HTML.n },
+            { type: 'text', content: ", we get:\n\n" },
+            { type: 'block-math', content: MATH_HTML.wedlm_formula_2 },
+            { type: 'text', content: "\n\nTherefore, the sum of all integers from 1 to 100 is " },
+            { type: 'math', content: MATH_HTML.boxed_5050 },
+            { type: 'text', content: "." }
+        ];
+
+        // Table configs
+        const TABLE_CONFIGS = [
+            {
+                tableName: "Base Model Evaluation",
+                tableCaption: "Standardized comparison on fundamental capabilities (0-shot/few-shot).",
+                columns: [
+                    { key: 'qwen25', label: 'Qwen2.5-7B', group: 'AR' },
+                    { key: 'qwen3', label: 'Qwen3-8B', group: 'AR' },
+                    { key: 'llada', label: 'LLaDA-8B', group: 'DLLM' },
+                    { key: 'dream', label: 'Dream-7B', group: 'DLLM' },
+                    { key: 'wedlm7', label: 'WeDLM-7B', group: 'Ours' },
+                    { key: 'wedlm8', label: 'WeDLM-8B', group: 'Ours' },
+                ],
+                data: [
+                    { name: 'General Reasoning', isSection: true },
+                    { name: 'ARC-C', meta: '0-shot', scores: { qwen25: { value: '89.93' }, qwen3: { value: '92.66' }, llada: { value: '81.14' }, dream: { value: '88.40' }, wedlm7: { value: '90.70' }, wedlm8: { value: '92.92', bold: true } } },
+                    { name: 'ARC-E', meta: '0-shot', scores: { qwen25: { value: '96.55' }, qwen3: { value: '97.13' }, llada: { value: '92.00' }, dream: { value: '96.21' }, wedlm7: { value: '96.13' }, wedlm8: { value: '97.14', bold: true } } },
+                    { name: 'HellaSwag', meta: '10-shot', scores: { qwen25: { value: '80.20' }, qwen3: { value: '85.27' }, llada: { value: '85.34', bold: true }, dream: { value: '78.05' }, wedlm7: { value: '85.11' }, wedlm8: { value: '84.55' } } },
+                    { name: 'MMLU', meta: '5-shot', scores: { qwen25: { value: '71.62' }, qwen3: { value: '74.03' }, llada: { value: '64.61' }, dream: { value: '70.64' }, wedlm7: { value: '71.93' }, wedlm8: { value: '75.46', bold: true } } },
+                    { name: 'Math & Science', isSection: true },
+                    { name: 'GSM8K', meta: '3-shot', scores: { qwen25: { value: '79.23' }, qwen3: { value: '85.97' }, llada: { value: '71.80' }, dream: { value: '75.97' }, wedlm7: { value: '84.76' }, wedlm8: { value: '90.20', bold: true } } },
+                    { name: 'MATH', meta: '4-shot', scores: { qwen25: { value: '43.40' }, qwen3: { value: '50.80' }, llada: { value: '28.00' }, dream: { value: '38.00' }, wedlm7: { value: '48.20' }, wedlm8: { value: '53.60', bold: true } } },
+                    { name: 'GPQA-Diamond', meta: '5-shot', scores: { qwen25: { value: '33.70' }, qwen3: { value: '37.00' }, llada: { value: '29.80' }, dream: { value: '25.76' }, wedlm7: { value: '36.87' }, wedlm8: { value: '42.42', bold: true } } },
+                    { name: 'Code Generation', isSection: true },
+                    { name: 'MBPP', meta: '3-shot', scores: { qwen25: { value: '65.30' }, qwen3: { value: '70.94', bold: true }, llada: { value: '41.99' }, dream: { value: '56.47' }, wedlm7: { value: '61.81' }, wedlm8: { value: '67.00' } } },
+                    { name: 'HumanEval', meta: '4-shot', scores: { qwen25: { value: '59.14' }, qwen3: { value: '68.90' }, llada: { value: '31.71' }, dream: { value: '20.12' }, wedlm7: { value: '68.90' }, wedlm8: { value: '75.00', bold: true } } },
+                    { name: 'HumanEval-plus', meta: '4-shot', scores: { qwen25: { value: '53.05' }, qwen3: { value: '63.40' }, llada: { value: '28.05' }, dream: { value: '19.51' }, wedlm7: { value: '64.00' }, wedlm8: { value: '68.90', bold: true } } },
+                    { name: 'Average', scores: { qwen25: { value: '67.21' }, qwen3: { value: '72.61' }, llada: { value: '55.44' }, dream: { value: '56.91' }, wedlm7: { value: '70.84' }, wedlm8: { value: '74.72', bold: true } } },
+                ]
+            },
+
+            {
+                tableName: "Instruct Model Evaluation",
+                tableCaption: "Performance after supervised fine-tuning (SFT) on identical datasets.",
+                columns: [
+                    { key: 'qwen25', label: 'Qwen2.5-7B', group: 'AR' },
+                    { key: 'qwen3', label: 'Qwen3-8B', group: 'AR' },
+                    { key: 'llada', label: 'LLaDA-8B', group: 'DLLM' },
+                    { key: 'dream', label: 'Dream-7B', group: 'DLLM' },
+                    { key: 'sdar', label: 'SDAR-8B', group: 'DLLM' },
+                    { key: 'wedlm7', label: 'WeDLM-7B', group: 'Ours' },
+                    { key: 'wedlm8', label: 'WeDLM-8B', group: 'Ours' },
+                ],
+                data: [
+                    { name: 'General Reasoning', isSection: true },
+                    { name: 'ARC-C', meta: '0-shot', scores: { qwen25: { value: '86.09' }, qwen3: { value: '91.47' }, llada: { value: '85.92' }, dream: { value: '87.20' }, sdar: { value: '91.13' }, wedlm7: { value: '89.59' }, wedlm8: { value: '92.92', bold: true } } },
+                    { name: 'ARC-E', meta: '0-shot', scores: { qwen25: { value: '96.17' }, qwen3: { value: '93.27' }, llada: { value: '94.32' }, dream: { value: '93.27' }, sdar: { value: '97.01' }, wedlm7: { value: '96.09' }, wedlm8: { value: '97.43', bold: true } } },
+                    { name: 'HellaSwag', meta: '10-shot', scores: { qwen25: { value: '86.13' }, qwen3: { value: '87.59' }, llada: { value: '78.55' }, dream: { value: '62.00' }, sdar: { value: '92.12', bold: true }, wedlm7: { value: '84.75' }, wedlm8: { value: '82.94' } } },
+                    { name: 'MMLU', meta: '5-shot', scores: { qwen25: { value: '71.98' }, qwen3: { value: '71.52' }, llada: { value: '63.70' }, dream: { value: '64.19' }, sdar: { value: '73.61' }, wedlm7: { value: '70.52' }, wedlm8: { value: '75.14', bold: true } } },
+                    { name: 'Math & Science', isSection: true },
+                    { name: 'GSM8K', meta: '3-shot', scores: { qwen25: { value: '89.91' }, qwen3: { value: '89.91' }, llada: { value: '80.59' }, dream: { value: '79.00' }, sdar: { value: '91.66' }, wedlm7: { value: '87.57' }, wedlm8: { value: '92.27', bold: true } } },
+                    { name: 'MATH', meta: '4-shot', scores: { qwen25: { value: '45.00' }, qwen3: { value: '69.60', bold: true }, llada: { value: '34.20' }, dream: { value: '41.00' }, sdar: { value: '43.40' }, wedlm7: { value: '55.40' }, wedlm8: { value: '64.80' } } },
+                    { name: 'GPQA-Diamond', meta: '5-shot', scores: { qwen25: { value: '27.10' }, qwen3: { value: '41.41' }, llada: { value: '25.25' }, dream: { value: '35.86' }, sdar: { value: '38.38' }, wedlm7: { value: '33.84' }, wedlm8: { value: '44.95', bold: true } } },
+                    { name: 'Code Generation', isSection: true },
+                    { name: 'MBPP', meta: '3-shot', scores: { qwen25: { value: '63.66' }, qwen3: { value: '68.37' }, llada: { value: '36.24' }, dream: { value: '58.52' }, sdar: { value: '67.97' }, wedlm7: { value: '63.66' }, wedlm8: { value: '70.53', bold: true } } },
+                    { name: 'HumanEval', meta: '4-shot', scores: { qwen25: { value: '76.22' }, qwen3: { value: '71.95' }, llada: { value: '36.59' }, dream: { value: '57.32' }, sdar: { value: '76.83' }, wedlm7: { value: '75.00' }, wedlm8: { value: '80.49', bold: true } } },
+                    { name: 'HumanEval-plus', meta: '4-shot', scores: { qwen25: { value: '70.12' }, qwen3: { value: '64.63' }, llada: { value: '32.32' }, dream: { value: '51.22' }, sdar: { value: '70.12' }, wedlm7: { value: '71.34' }, wedlm8: { value: '73.78', bold: true } } },
+                    { name: 'Average', scores: { qwen25: { value: '71.09' }, qwen3: { value: '75.12' }, llada: { value: '56.77' }, dream: { value: '62.96' }, sdar: { value: '74.22' }, wedlm7: { value: '72.78' }, wedlm8: { value: '77.53', bold: true } } },
+                ]
+            }
+        ];
+
+        const GROUP_STYLES = {
+            'AR': { headerBg: 'bg-gray-100', headerText: 'text-gray-600', borderColor: 'border-gray-200', cellBg: 'bg-white', badgeBg: 'bg-gray-200', badgeText: 'text-gray-700', label: 'AR Baseline' },
+            'DLLM': { headerBg: 'bg-yellow-50', headerText: 'text-yellow-700', borderColor: 'border-yellow-200', cellBg: 'bg-white', badgeBg: 'bg-yellow-100', badgeText: 'text-yellow-800', label: 'DLLM Baseline' },
+            'Ours': { headerBg: 'bg-green-50', headerText: 'text-green-700', borderColor: 'border-green-200', cellBg: 'bg-green-50-20', badgeBg: 'bg-green-200', badgeText: 'text-green-800', label: 'WeDLM (Ours)' }
+        };
+
+        // Tokenize chunks for animation
+        const tokenizeChunks = (chunks) => {
+            const tokens = [];
+            chunks.forEach(chunk => {
+                if (chunk.type === 'text') {
+                    chunk.content.split(/(\s+)/).forEach(part => {
+                        if (part.length > 0) tokens.push({ isHtml: false, content: part });
+                    });
+                } else {
+                    tokens.push({ isHtml: true, content: chunk.content, isBlock: chunk.type === 'block-math' });
+                }
+            });
+            return tokens;
+        };
+
+        const AR_TOKENS = tokenizeChunks(AR_DEMO_CHUNKS);
+        const WEDLM_TOKENS = tokenizeChunks(WEDLM_DEMO_CHUNKS);
+
+        // Speed Teaser Animation
+        const initSpeedTeaser = () => {
+            const vllmEl = document.getElementById('vllm-output');
+            const wedlmEl = document.getElementById('wedlm-output');
+            const vllmTimerEl = document.getElementById('vllm-timer');
+            const wedlmTimerEl = document.getElementById('wedlm-timer');
+            const btn = document.getElementById('replay-btn');
+            const vllmCursor = document.getElementById('vllm-cursor');
+            const wedlmCursor = document.getElementById('wedlm-cursor');
+            const vllmIndicator = document.getElementById('vllm-indicator');
+            const wedlmIndicator = document.getElementById('wedlm-indicator');
+
+            let isPlaying = false;
+            let vllmInterval, wedlmInterval;
+
+            const renderTokens = (container, tokens, limit) => {
+                let html = '';
+                for (let i = 0; i < limit; i++) {
+                    const t = tokens[i];
+                    if (t.isBlock) html += `<div class="w-full my-3 flex justify-center text-base md:text-lg"><span class="mx-0.5">${t.content}</span></div>`;
+                    else if (t.isHtml) html += `<span class="mx-0.5">${t.content}</span>`;
+                    else html += `<span>${t.content}</span>`;
+                }
+                container.innerHTML = html;
+            };
+
+            const start = () => {
+                if (isPlaying) return;
+                isPlaying = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                vllmCursor.classList.remove('opacity-0');
+                wedlmCursor.classList.remove('opacity-0');
+                vllmIndicator.classList.add('animate-pulse');
+                wedlmIndicator.classList.add('animate-ping');
+
+                const AR_TIME = 1.8, WEDLM_TIME = 0.22;
+                const startTime = Date.now();
+                let arIdx = 0;
+                const arTotal = AR_TOKENS.length;
+                const arStepTime = (AR_TIME * 1000) / arTotal;
+                
+                vllmInterval = setInterval(() => {
+                    arIdx++;
+                    renderTokens(vllmEl, AR_TOKENS, arIdx);
+                    vllmTimerEl.innerText = Math.min((Date.now() - startTime) / 1000, AR_TIME).toFixed(2) + 's';
+                    if (arIdx >= arTotal) {
+                        clearInterval(vllmInterval);
+                        vllmTimerEl.innerText = AR_TIME.toFixed(2) + 's';
+                        vllmCursor.classList.add('opacity-0');
+                        vllmIndicator.classList.remove('animate-pulse');
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        isPlaying = false;
+                    }
+                }, arStepTime);
+
+                let wedlmChunk = 0;
+                const wedlmChunksCount = 8;
+                const wedlmTotal = WEDLM_TOKENS.length;
+                const wedlmStepTime = (WEDLM_TIME * 1000) / wedlmChunksCount;
+                const tokensPerChunk = Math.ceil(wedlmTotal / wedlmChunksCount);
+
+                wedlmInterval = setInterval(() => {
+                    wedlmChunk++;
+                    const targetIdx = Math.min(wedlmChunk * tokensPerChunk, wedlmTotal);
+                    renderTokens(wedlmEl, WEDLM_TOKENS, targetIdx);
+                    wedlmTimerEl.innerText = Math.min((Date.now() - startTime) / 1000, WEDLM_TIME).toFixed(2) + 's';
+                    if (targetIdx >= wedlmTotal) {
+                        clearInterval(wedlmInterval);
+                        wedlmTimerEl.innerText = WEDLM_TIME.toFixed(2) + 's';
+                        wedlmCursor.classList.add('opacity-0');
+                        wedlmIndicator.classList.remove('animate-ping');
+                    }
+                }, wedlmStepTime);
+            };
+
+            btn.onclick = start;
+            setTimeout(start, 500);
+        };
+
+        // Methodology Demos
+        const initMethodology = () => {
+            // Topological Demo
+            const topoTokens = [
+                { id: 0, text: "The", type: "observed", posId: 0 },
+                { id: 1, text: "sky", type: "noisy", posId: 1 },
+                { id: 2, text: "is", type: "observed", posId: 2 },
+                { id: 3, text: "blue", type: "noisy", posId: 3 },
+            ];
+            let topoStep = 0;
+            const topoContainer = document.getElementById('topo-tokens');
+            const topoDesc = document.getElementById('topo-desc');
+            const topoDots = document.getElementById('topo-dots');
+            const topoBtn = document.getElementById('topo-next-btn');
+            const topoLabel = document.getElementById('topo-label');
+            const topoLegend = document.getElementById('topo-legend');
+
+            const renderTopo = () => {
+                const stepDescriptions = [
+                    "1. Logical Order: The natural text sequence implies bidirectional dependency.",
+                    "2. Diffusion State: Some tokens are 'Observed' (Known), others are 'Noisy' (Masked).",
+                    "3. Topological Reorder: We move ALL observed tokens to the front. Now, 'Noisy' tokens can attend to 'Future' observed tokens via standard Causal Masking."
+                ];
+                topoDesc.innerText = stepDescriptions[topoStep];
+                topoLabel.innerText = topoStep === 0 ? 'Logical View' : topoStep === 1 ? 'Diffusion Mask' : 'Physical Memory';
+                topoDots.innerHTML = [0,1,2].map(i => `<div class="h-2.5 w-2.5 rounded-full transition-all duration-300 ${topoStep === i ? 'bg-blue-600 transform scale-125 ring-2 ring-blue-200' : 'bg-gray-300'}"></div>`).join('');
+
+                let display = topoStep === 2 ? [...topoTokens.filter(t => t.type === 'observed'), ...topoTokens.filter(t => t.type === 'noisy')] : topoTokens;
+                
+                topoContainer.innerHTML = display.map((t, idx) => {
+                    const isObserved = t.type === 'observed';
+                    let bg = "bg-white", border = "border-gray-200", text = "text-gray-800";
+                    if (topoStep >= 1) {
+                        if (isObserved) { bg = "bg-blue-50"; border = "border-blue-200"; text = "text-blue-800"; }
+                        else { bg = "bg-gray-50"; border = "border-gray-300 border-dashed"; text = "text-gray-400"; }
+                    }
+                    return `<div class="transition-all duration-700 w-20 h-24 sm:w-24 sm:h-28 rounded-xl border-2 ${border} ${bg} flex flex-col items-center justify-center shadow-sm relative group">
+                        <div class="absolute -top-3 bg-gray-800 text-white text-xs px-3 py-1 rounded-full font-mono shadow-sm z-10" style="font-size:10px;line-height:1.4;">Pos: ${t.posId}</div>
+                        <span class="text-xl font-bold ${text}">${t.text}</span>
+                        <span class="text-xs uppercase mt-1 font-medium tracking-wide text-gray-400" style="font-size:10px;">${topoStep === 0 ? `Idx ${idx}` : t.type}</span>
+                    </div>`;
+                }).join('');
+
+                topoLegend.style.opacity = topoStep === 2 ? '1' : '0';
+                topoBtn.innerHTML = topoStep === 2 ? `Replay ${ICONS['rotate-right']}` : `Next Step ${ICONS['arrow-right']}`;
+            };
+
+            topoBtn.onclick = () => { topoStep = (topoStep + 1) % 3; renderTopo(); };
+            renderTopo();
+
+            // Streaming Demo
+            let streamStep = 0;
+            const streamTokens = [
+                { id: 0, text: "Fast", state: ["processing", "ready", "committed"] },
+                { id: 1, text: "infer", state: ["processing", "processing", "processing"] },
+                { id: 2, text: "is", state: ["processing", "processing", "processing"] },
+                { id: 3, text: "vital", state: ["waiting", "waiting", "new"] },
+            ];
+            const streamContainer = document.getElementById('stream-tokens');
+            const streamWindow = document.getElementById('stream-window');
+            const streamDesc = document.getElementById('stream-desc');
+            const streamDots = document.getElementById('stream-dots');
+            const streamBtn = document.getElementById('stream-next-btn');
+            const streamLabel = document.getElementById('stream-label');
+
+            const renderStream = () => {
+                const descs = [
+                    "1. Parallel Generation: The model generates a window of tokens (K=3) simultaneously.",
+                    "2. Async Completion: The first token 'Fast' reaches confidence threshold early.",
+                    "3. Streaming Slide: 'Fast' is committed. Window slides immediately. No waiting!"
+                ];
+                streamDesc.innerText = descs[streamStep];
+                streamLabel.innerText = streamStep === 0 ? 'Step 1: Diffuse' : streamStep === 1 ? 'Step 2: Verify' : 'Step 3: Slide';
+                streamDots.innerHTML = [0,1,2].map(i => `<div class="h-2.5 w-2.5 rounded-full transition-all duration-300 ${streamStep === i ? 'bg-green-600 transform scale-125 ring-2 ring-green-200' : 'bg-gray-300'}"></div>`).join('');
+
+                const isMobile = window.innerWidth < 640;
+                streamWindow.style.left = streamStep < 2 ? (isMobile ? "4px" : "10px") : (isMobile ? "90px" : "100px");
+                streamWindow.style.width = isMobile ? "255px" : "280px";
+
+                streamContainer.innerHTML = streamTokens.map(t => {
+                    const status = t.state[streamStep];
+                    let cls = "", icon = "";
+                    if (status === "committed") { cls = "bg-green-600 text-white border-green-600 shadow-md"; icon = ICONS['check']; }
+                    else if (status === "ready") { cls = "bg-white text-green-700 border-green-500 ring-4 ring-green-100 shadow-sm"; icon = ICONS['check']; }
+                    else if (status === "processing") { cls = "bg-white text-blue-600 border-blue-400 animate-pulse"; icon = ICONS['spinner']; }
+                    else if (status === "new") { cls = "bg-white text-blue-600 border-blue-400 shadow-sm"; icon = ICONS['plus']; }
+                    else { cls = "bg-gray-50 text-gray-400 border-gray-200 border-dashed opacity-50"; icon = ICONS['clock']; }
+                    return `<div class="relative z-10 w-16 h-20 sm:w-20 sm:h-24 flex flex-col items-center justify-center rounded-lg border-2 font-bold transition-all duration-500 ${cls}">
+                        <div class="text-xs font-normal opacity-70 mb-1" style="font-size:10px;">t<sub>${t.id}</sub></div>
+                        <div class="text-sm sm:text-base">${t.text}</div>
+                        <div class="mt-2 text-xs" style="font-size:10px;">${icon}</div>
+                    </div>`;
+                }).join('');
+
+                streamBtn.innerHTML = streamStep === 2 ? `Replay ${ICONS['rotate-right']}` : `Next Step ${ICONS['arrow-right']}`;
+            };
+            
+            window.addEventListener('resize', renderStream);
+            streamBtn.onclick = () => { streamStep = (streamStep + 1) % 3; renderStream(); };
+            renderStream();
+        };
+
+        // Render Tables
+        const renderTables = () => {
+            const container = document.getElementById('tables-container');
+            let html = '';
+            TABLE_CONFIGS.forEach(config => {
+                const groups = {};
+                config.columns.forEach(col => { if (!groups[col.group]) groups[col.group] = []; groups[col.group].push(col); });
+
+                html += `<div class="flex flex-col mb-20 relative z-10">
+                    <div class="mb-8 pl-4 border-l-4 border-green-600">
+                        <h4 class="text-2xl font-bold text-gray-900 tracking-tight">${config.tableName}</h4>
+                        <p class="text-gray-500 text-sm mt-1 font-medium">${config.tableCaption}</p>
+                    </div>
+                    <div class="rounded-2xl border-2 border-gray-100 overflow-hidden shadow-sm bg-white relative">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm border-separate border-spacing-0 font-sans">
+                                <thead>
+                                    <tr>
+                                        <th class="pb-4 pt-4 text-left pl-6 align-bottom bg-transparent"><span class="text-xs font-black text-black uppercase tracking-widest border-l-4 border-black pl-3">Benchmark</span></th>
+                                        ${Object.entries(groups).map(([groupKey, cols]) => {
+                                            const style = GROUP_STYLES[groupKey];
+                                            const isOurs = groupKey === 'Ours';
+                                            let cls = `pb-2 pt-3 text-center align-bottom border-t border-x rounded-t-xl ${style.headerBg} ${style.borderColor}`;
+                                            if(isOurs) cls += ' shadow-our-col relative z-20 transform scale-y-105 origin-bottom translate-y-px';
+                                            else cls += ' opacity-90';
+                                            return `<th colspan="${cols.length}" class="${cls}"><div class="flex flex-row items-center justify-center gap-2 ${isOurs?'py-1':''}"><span class="text-sm font-bold tracking-tight ${style.headerText}">${style.label}</span></div></th>`;
+                                        }).join('')}
+                                    </tr>
+                                    <tr>
+                                        <th class="py-3 px-4 border-b border-gray-200 text-left bg-white"></th>
+                                        ${config.columns.map((col, idx) => {
+                                            const style = GROUP_STYLES[col.group];
+                                            const isOurs = col.group === 'Ours';
+                                            const isGroupFirst = idx === 0 || config.columns[idx - 1].group !== col.group;
+                                            const isGroupLast = idx === config.columns.length - 1 || config.columns[idx + 1].group !== col.group;
+                                            let cls = `py-3 px-2 text-center text-xs font-bold ${style.headerText} ${style.cellBg} border-b ${style.borderColor}`;
+                                            if(isGroupFirst) cls += " border-l";
+                                            if(isGroupLast) cls += " border-r";
+                                            if(isOurs) cls += " relative z-20 shadow-our-col";
+                                            return `<th class="${cls}">${col.label}</th>`;
+                                        }).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${config.data.map((row, rIdx) => {
+                                        if (row.isSection) {
+                                            return `<tr><td colspan="${config.columns.length + 1}" class="py-6"><div class="flex items-center"><div class="bg-gray-100 rounded-r-full py-1.5 px-4 pr-6 border-l-4 border-gray-400"><span class="text-xs font-extrabold text-gray-600 uppercase tracking-widest" style="font-size:11px;">${row.name}</span></div><div class="h-px bg-gray-100 flex-grow ml-2"></div></div></td></tr>`;
+                                        }
+                                        const isAverage = row.name === "Average";
+                                        const rowCls = isAverage ? "font-bold" : "group hover:bg-gray-50";
+                                        let tds = `<td class="py-3 pl-6 pr-4 whitespace-nowrap border-b border-r border-gray-100 bg-white ${isAverage?'border-gray-200 bg-gray-50':''}"><div class="flex flex-col justify-center"><span class="text-sm ${isAverage?'text-gray-900':'font-semibold text-gray-700'}">${row.name}</span>${row.meta ? `<span class="text-xs text-gray-400 font-mono mt-0.5" style="font-size:10px;">${row.meta}</span>` : ''}</div></td>`;
+                                        
+                                        tds += config.columns.map((col, cIdx) => {
+                                            const score = row.scores?.[col.key];
+                                            const style = GROUP_STYLES[col.group];
+                                            const isOurs = col.group === 'Ours';
+                                            const isGroupFirst = cIdx === 0 || config.columns[cIdx - 1].group !== col.group;
+                                            const isGroupLast = cIdx === config.columns.length - 1 || config.columns[cIdx + 1].group !== col.group;
+                                            
+                                            let cls = `py-3 px-2 text-center font-mono text-sm transition-colors duration-200`;
+                                            if(isOurs) cls += isAverage ? " bg-green-50" : ` ${style.cellBg}`;
+                                            else cls += isAverage ? " bg-gray-100 bg-opacity-50" : " bg-white";
+                                            
+                                            const borderBottom = isAverage ? style.borderColor : 'border-gray-100';
+                                            cls += ` border-b ${borderBottom}`;
+                                            if(isGroupFirst) cls += ` border-l ${style.borderColor}`;
+                                            if(isGroupLast) cls += ` border-r ${style.borderColor}`;
+                                            if(isOurs) {
+                                                cls += " relative z-20 shadow-our-cell";
+                                                if (rIdx === config.data.length - 1 && !isAverage) cls += " shadow-our-cell-bottom rounded-b-lg";
+                                            }
+
+                                            let content = '<span class="text-gray-300">-</span>';
+                                            if(score) {
+                                                if(score.bold) content = `<span class="inline-block ${style.badgeBg} ${style.badgeText} text-xs px-3 py-1 rounded-md font-bold shadow-sm" style="line-height:1.4;">${score.value}</span>`;
+                                                else {
+                                                    const txtColor = isAverage ? "text-gray-900" : (isOurs ? "text-green-800 font-medium" : "text-gray-600");
+                                                    content = `<span class="${txtColor}">${score.value}</span>`;
+                                                }
+                                            }
+                                            return `<td class="${cls}">${content}</td>`;
+                                        }).join('');
+                                        return `<tr class="${rowCls}">${tds}</tr>`;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        };
+
+        // BibTeX Copy
+        const initBibtexCopy = () => {
+            const btn = document.getElementById('copy-bibtex-btn');
+            const content = document.getElementById('bibtex-content');
+            if (!btn || !content) return;
+            
+            btn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(content.innerText);
+                    const originalText = btn.innerText;
+                    btn.innerText = 'Copied!';
+                    btn.classList.add('bg-green-600', 'text-white');
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.classList.remove('bg-green-600', 'text-white');
+                    }, 2000);
+                } catch (err) {
+                    // Fallback for older browsers or when clipboard API fails
+                    const textArea = document.createElement('textarea');
+                    textArea.value = content.innerText;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-9999px';
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        btn.innerText = 'Copied!';
+                        setTimeout(() => { btn.innerText = 'Copy'; }, 2000);
+                    } catch (e) {
+                        btn.innerText = 'Failed';
+                        setTimeout(() => { btn.innerText = 'Copy'; }, 2000);
+                    }
+                    document.body.removeChild(textArea);
+                }
+            });
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initSpeedTeaser();
+            initMethodology();
+            renderTables();
+            initBibtexCopy();
+        });
+    </script>
+</body>
+</html>
